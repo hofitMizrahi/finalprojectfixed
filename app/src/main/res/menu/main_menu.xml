@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:title="Km/miles"
+        android:id="@+id/km_popup"/>
+
+    <item
+        android:title="delete favorits"
+        android:id="@+id/delete_popup"/>
+
+    <item
+        android:title="favorits"
+        android:id="@+id/favorite_popup"
+        android:icon="@drawable/favorits_icon"
+        app:showAsAction="always"/>
+
+</menu>

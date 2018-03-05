@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layoutDirection="ltr"
+    >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="259dp"
+        android:background="@drawable/fixdrink"
+        android:orientation="vertical">
+
+        <!--<Button-->
+        <!--android:layout_width="33dp"-->
+        <!--android:layout_height="31dp"-->
+        <!--android:layout_marginLeft="7dp"-->
+        <!--android:layout_marginTop="27dp"-->
+        <!--android:background="@drawable/location_green" />-->
+
+
+        <RelativeLayout
+            android:id="@+id/linearLayout"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginTop="75dp"
+            android:orientation="horizontal">
+
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentBottom="true"
+                android:layout_toLeftOf="@+id/linearLayout2"
+                android:layout_toStartOf="@+id/linearLayout2">
+
+                <Button
+                    android:id="@+id/locationChangeBtn"
+                    android:layout_width="38dp"
+                    android:layout_height="33dp"
+                    android:layout_alignParentBottom="true"
+                    android:layout_centerHorizontal="true"
+                    android:background="@drawable/not_location" />
+            </RelativeLayout>
+
+            <LinearLayout
+                android:id="@+id/linearLayout2"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
+                android:background="@drawable/searching_style">
+
+                <EditText
+
+                    android:id="@+id/searchtext_ET"
+                    android:layout_width="200dp"
+                    android:layout_height="32dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginTop="8dp"
+                    android:backgroundTint="@color/Transparent"
+                    android:hint="enter place.."
+                    android:lines="1"
+                    android:paddingTop="2dp" />
+
+                <ImageView
+                    android:id="@+id/search_image"
+                    android:layout_width="33dp"
+                    android:layout_height="30dp"
+                    android:layout_marginLeft="2dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginTop="3dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/glass"
+                    android:paddingRight="8dp"
+                    android:paddingTop="10dp" />
+
+            </LinearLayout>
+
+        </RelativeLayout>
+
+        <!--<Switch-->
+        <!--android:id="@+id/switch3"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_gravity="center"-->
+        <!--android:gravity="center"-->
+        <!--android:textSize="18sp" />-->
+
+        <!--app:ss_leftIcon="@drawable/ic_male"-->
+        <!--app:ss_rightIcon="@drawable/ic_female"-->
+
+        <SeekBar
+            android:id="@+id/seekBar"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_gravity="center"
+            android:visibility="invisible"
+            android:paddingBottom="4dp"
+            tools:layout_editor_absoluteX="4dp"
+            tools:layout_editor_absoluteY="50dp" />
+
+    </LinearLayout>
+
+
+
+
+    <LinearLayout
+        android:background="#65dfdfdf"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/myList_RV"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="2dp"
+             />
+
+    </LinearLayout>
+
+
+</LinearLayout>
