@@ -68,16 +68,34 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter <MyRecyclerAdapter.m
             TextView title = holderView.findViewById(R.id.title_TV);
             title.setText(place.getName());
 
+//--------------------------------------------------------------------------------------------------
+
             // address
             TextView address = holderView.findViewById(R.id.address_TV);
 
+            String PlaceAddress = null;
 
+            //if i use the textSearch API
             if(!searchWithLocationAPI){
-                address.setText(place.getFormatted_address());
+                PlaceAddress = place.getFormatted_address();
 
+            //if i use nearBy API
             }else {
-                    address.setText(place.getVicinity().toString());
+                PlaceAddress = place.getVicinity();
             }
+
+            if(!PlaceAddress.contains(",")){
+
+                address.setText(PlaceAddress);
+            }else{
+
+                String[] parts = PlaceAddress.split(",", 2);
+                String part1 = parts[0]; // address
+                String part2 = parts[1]; // country
+
+                address.setText(part1 + "\n" + part2);
+            }
+//--------------------------------------------------------------------------------------------------
 
             // open or close - boolean
             TextView openOrCloseSing = holderView.findViewById(R.id.openOrCloseSing);
@@ -115,6 +133,9 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter <MyRecyclerAdapter.m
                         .into(imageView);
             }
 
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+            // km || miles
             TextView meters = holderView.findViewById(R.id.KM_TV);
 
             LatLng endP = new LatLng(place.getGeometry().getLocation().getLat(), place.getGeometry().getLocation().getLng());
@@ -122,7 +143,20 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter <MyRecyclerAdapter.m
             CalculateDistance calculateDistance = new CalculateDistance();
             double distance = calculateDistance.getDistance(latLng, endP);
 
-            meters.setText(String.valueOf((int)distance));
+            String allmeters = String.valueOf(round(distance, 1));
+
+            meters.setText(allmeters);
+
+            }
         }
+
+        private double round(double value, int places) {
+        if (places < 0) throw new IllegalArgumentException();
+
+        long factor = (long) Math.pow(10, places);
+        value = value * factor;
+        long tmp = Math.round(value);
+        return (double) tmp / factor;
     }
+
 }

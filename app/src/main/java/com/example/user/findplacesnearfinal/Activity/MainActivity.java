@@ -1,23 +1,14 @@
 package com.example.user.findplacesnearfinal.Activity;
 
-import android.Manifest;
-import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 
+import com.example.user.findplacesnearfinal.Fragments.FavoritesFragment;
 import com.example.user.findplacesnearfinal.Fragments.FragmentB;
 import com.example.user.findplacesnearfinal.R;
 import com.example.user.findplacesnearfinal.Fragments.SearchFragment;
@@ -98,8 +89,8 @@ public class MainActivity extends AppCompatActivity{
         switch (item.getItemId()) {
 
             case R.id.favorite_popup:
-//                favoritesFragment = new FavoritesFragment();
-//                getFragmentManager().beginTransaction().addToBackStack("replacing").replace(R.id.main_layout, favoritesFragment).commit();
+//                FavoritesFragment favoritesFragment = new FavoritesFragment();
+//                getFragmentManager().beginTransaction().addToBackStack("replacing").replace(R.id.main_portrait_layout, favoritesFragment).commit();
 
         }
         return true;

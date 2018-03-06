@@ -92,6 +92,7 @@ public class SearchFragment extends Fragment implements LocationListener {
                 && locationManager
                 .isProviderEnabled(LocationManager.GPS_PROVIDER)) {
 
+            getLocation();
             seekBar.setVisibility(View.VISIBLE);
             searchWithLocationAPI = true;
             locationBtn.setBackgroundResource(R.drawable.location_green);
@@ -114,6 +115,8 @@ public class SearchFragment extends Fragment implements LocationListener {
                         == PackageManager.PERMISSION_GRANTED
                         && locationManager
                         .isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+
+                    getLocation();
                     locationBtn.setBackgroundResource(R.drawable.location_green);
                     seekBar.setVisibility(View.VISIBLE);
                     searchWithLocationAPI = true;
@@ -378,8 +381,11 @@ public class SearchFragment extends Fragment implements LocationListener {
 
         if (myLocation == null) {
             Toast.makeText(getActivity(), "location not available :(", Toast.LENGTH_SHORT).show();
+            myLocation = ((LocationManager) getActivity().getSystemService(LOCATION_SERVICE)).getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
 
-        } else {
+        }
+
+        if(myLocation != null){
             Toast.makeText(getActivity(), "lat: " + myLocation.getLatitude() + " lon:" + myLocation.getLongitude(), Toast.LENGTH_SHORT).show();
             lastKnowLoc = myLocation.getLatitude() + "," + myLocation.getLongitude();
 
@@ -394,10 +400,14 @@ public class SearchFragment extends Fragment implements LocationListener {
 
             case REQUEST_CODE: {
 
-                // If request is cancelled, the result arrays are empty.
+                // if request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     {
-                        getLocation();
+                        // if user have GPS provider Enable
+                        if(isGpsEnable()){
+
+                            getLocation();
+                        }
                     }
 
                 } else {
@@ -414,6 +424,7 @@ public class SearchFragment extends Fragment implements LocationListener {
     // check if gps enable, if not show alert dialog and intent to open GPS
     private boolean isGpsEnable() {
 
+        // if i don't have gps
         if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             Toast.makeText(getActivity(), "GPS is disable!", Toast.LENGTH_LONG).show();
 
