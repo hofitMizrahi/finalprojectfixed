@@ -12,6 +12,7 @@ import android.widget.TextView;
 import com.example.user.findplacesnearfinal.CalculateDistance;
 import com.example.user.findplacesnearfinal.Model.Place;
 import com.example.user.findplacesnearfinal.R;
+import com.example.user.findplacesnearfinal.Service.MyFragmentChanger;
 import com.google.android.gms.maps.model.LatLng;
 import com.squareup.picasso.Picasso;
 
@@ -62,7 +63,7 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter <MyRecyclerAdapter.m
         }
 
         @SuppressLint("ResourceType")
-        public void bindMyCityData(Place place) {
+        public void bindMyCityData(final Place place) {
 
             // title
             TextView title = holderView.findViewById(R.id.title_TV);
@@ -93,7 +94,7 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter <MyRecyclerAdapter.m
                 String part1 = parts[0]; // address
                 String part2 = parts[1]; // country
 
-                address.setText(part1 + "\n" + part2);
+                address.setText(part1 + "\n" + part2.substring(1));
             }
 //--------------------------------------------------------------------------------------------------
 
@@ -147,16 +148,29 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter <MyRecyclerAdapter.m
 
             meters.setText(allmeters);
 
-            }
+//-------------------------------------------------------------------------------------------------------------------------------------------
+
+            holderView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    //Replaces fragment to mapFragment and displays the location by the name of the place you clicked
+                    MyFragmentChanger cityChanger = (MyFragmentChanger) context;
+                    cityChanger.changeFragments(place);
+                }
+            });
+        }
+
+
         }
 
         private double round(double value, int places) {
-        if (places < 0) throw new IllegalArgumentException();
+            if (places < 0) throw new IllegalArgumentException();
 
-        long factor = (long) Math.pow(10, places);
-        value = value * factor;
-        long tmp = Math.round(value);
-        return (double) tmp / factor;
-    }
+            long factor = (long) Math.pow(10, places);
+            value = value * factor;
+            long tmp = Math.round(value);
+            return (double) tmp / factor;
+        }
 
 }

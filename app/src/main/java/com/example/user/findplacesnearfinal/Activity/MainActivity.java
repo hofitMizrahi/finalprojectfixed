@@ -9,22 +9,36 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.example.user.findplacesnearfinal.Fragments.FavoritesFragment;
-import com.example.user.findplacesnearfinal.Fragments.FragmentB;
+import com.example.user.findplacesnearfinal.Model.Place;
 import com.example.user.findplacesnearfinal.R;
 import com.example.user.findplacesnearfinal.Fragments.SearchFragment;
+import com.example.user.findplacesnearfinal.Service.MyFragmentChanger;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends AppCompatActivity implements MyFragmentChanger{
+
+    MapFragment mapFragment;
+    FavoritesFragment favoritesFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mapFragment = new MapFragment();
+        favoritesFragment = new FavoritesFragment();
+
         screenPositionOrder();
         setToolBar();
 
     }
 
+//-------------------------------------------------------------------------------------------------
 
     /**
      * method that Initializing the layouts by the device orientation and if its mobile or tablet.
@@ -44,8 +58,7 @@ public class MainActivity extends AppCompatActivity{
             SearchFragment searchFragment = new SearchFragment();
             getFragmentManager().beginTransaction().addToBackStack("replacing").replace(R.id.search_tablet_layout, searchFragment).commit();
 
-            FragmentB fragmentB = new FragmentB();
-            getFragmentManager().beginTransaction().addToBackStack("replacing").replace(R.id.tablet_map_layout, fragmentB).commit();
+            getFragmentManager().beginTransaction().addToBackStack("replacing").replace(R.id.tablet_map_layout, mapFragment).commit();
         }
     }
 
@@ -72,6 +85,7 @@ public class MainActivity extends AppCompatActivity{
         return true;
     }
 
+//-------------------------------------------------------------------------------------------------
 
     /**
      * menu
@@ -89,37 +103,12 @@ public class MainActivity extends AppCompatActivity{
         switch (item.getItemId()) {
 
             case R.id.favorite_popup:
-//                FavoritesFragment favoritesFragment = new FavoritesFragment();
-//                getFragmentManager().beginTransaction().addToBackStack("replacing").replace(R.id.main_portrait_layout, favoritesFragment).commit();
+
+                getFragmentManager().beginTransaction().addToBackStack("replacing").replace(R.id.main_portrait_layout, favoritesFragment).commit();
 
         }
         return true;
     }
-
-//---------------------------------------------------------------------------------------------------------------------------------
-//
-//    @Override
-//    protected void onResume() {
-//        super.onResume();
-//        if (ContextCompat.checkSelfPermission(this,
-//                Manifest.permission.ACCESS_FINE_LOCATION)
-//                == PackageManager.PERMISSION_GRANTED) {
-//
-//            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, this);
-//        }
-//    }
-//
-//    @Override
-//    protected void onPause() {
-//        super.onPause();
-//        if (ContextCompat.checkSelfPermission(this,
-//                Manifest.permission.ACCESS_FINE_LOCATION)
-//                == PackageManager.PERMISSION_GRANTED) {
-//
-//            locationManager.removeUpdates(this);
-//        }
-//    }
-
 
     private void setToolBar() {
 
@@ -128,4 +117,34 @@ public class MainActivity extends AppCompatActivity{
         setSupportActionBar(toolbar);
     }
 
+//--------------------------------------------------------------------------------------------------------------
+
+    /**
+     *
+     * @param place - Place Object to send the map Fragment
+     */
+
+    @Override
+    public void changeFragments(final Place place) {
+
+        if(isPortrait()) {
+            mapFragment = new MapFragment();
+            getFragmentManager().beginTransaction().addToBackStack("replacing").replace(R.id.main_portrait_layout, mapFragment).commit();
+        }
+        mapFragment.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(GoogleMap googleMap) {
+                googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+
+                LatLng latLng = new LatLng(place.getGeometry().getLocation().getLat(),place.getGeometry().getLocation().getLng());
+                //update location and zoom 0 is the most far
+                googleMap.addMarker(new MarkerOptions().position(latLng));
+                googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng , 10));
+
+                //googleMap.addMarker(new MarkerOptions().position(latLng).title(location.getPlace()));
+
+            }
+        });
+
+    }
 }
