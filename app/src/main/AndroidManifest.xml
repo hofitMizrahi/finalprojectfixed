@@ -11,7 +11,7 @@
     <uses-feature android:name="android.hardware.location.gps" />
 
     <application
-        android:icon="@drawable/ic_launcher"
+        android:icon="@drawable/ic_launcher_background"
         android:allowBackup="true"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
@@ -32,10 +32,10 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyBwpg6a0MQuMKzVTHlwzCmhTksktUCqHf8" />
 
-        <meta-data android:name="DATABASE" android:value="sugar_example.db" />
+        <meta-data android:name="DATABASE" android:value="sugar.db" />
         <meta-data android:name="VERSION" android:value="2" />
         <meta-data android:name="QUERY_LOG" android:value="true" />
-        <meta-data android:name="DOMAIN_PACKAGE_NAME" android:value="com.example" />
+        <meta-data android:name="DOMAIN_PACKAGE_NAME" android:value="com.example.user.findplacesnearfinal.DataBase" />
 
     </application>
 

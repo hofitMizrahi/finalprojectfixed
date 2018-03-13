@@ -5,7 +5,6 @@ import java.util.List;
 public class Place{
 
     private Geometry geometry;
-    private Location location;
     private String icon;
     private String name;
     private OpenHours opening_hours;
@@ -22,12 +21,11 @@ public class Place{
     //, String vicinity
 
 
-    public Place(Geometry geometry, Location location, String icon,
+    public Place(Geometry geometry, String icon,
                  String name, OpenHours opening_hours,
                  List<Photo> photos, double rating, String[] types
                  , String formatted_address, String vicinity) {
         this.geometry = geometry;
-        this.location = location;
         this.icon = icon;
         this.name = name;
         this.opening_hours = opening_hours;
@@ -68,10 +66,6 @@ public class Place{
 
     public String[] getTypes() {
         return types;
-    }
-
-    public Location getLocation() {
-        return location;
     }
 
     public String getVicinity() {

@@ -10,9 +10,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.user.findplacesnearfinal.CalculateDistance;
-import com.example.user.findplacesnearfinal.Model.Place;
 import com.example.user.findplacesnearfinal.R;
 import com.example.user.findplacesnearfinal.Service.MyFragmentChanger;
+import com.example.user.findplacesnearfinal.DataBase.PlacesTable;
 import com.google.android.gms.maps.model.LatLng;
 import com.squareup.picasso.Picasso;
 
@@ -22,12 +22,13 @@ import static com.example.user.findplacesnearfinal.Fragments.SearchFragment.sear
 
 public class MyRecyclerAdapter extends RecyclerView.Adapter <MyRecyclerAdapter.myViewHolder> {
 
-    ArrayList<Place> placeArrayList;
+    ArrayList<PlacesTable> placeArrayList;
     Context context;
     LatLng latLng;
 
-    public MyRecyclerAdapter(ArrayList<Place> placeArrayList, Context context, LatLng latLng) {
-        this.placeArrayList = placeArrayList;
+    public MyRecyclerAdapter(Context context, LatLng latLng) {
+
+        placeArrayList = (ArrayList<PlacesTable>) PlacesTable.listAll(PlacesTable.class);
         this.context = context;
         this.latLng = latLng;
     }
@@ -43,7 +44,7 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter <MyRecyclerAdapter.m
     @Override
     public void onBindViewHolder(myViewHolder singleItem, int position) {
 
-        Place place = placeArrayList.get(position);
+        PlacesTable place = placeArrayList.get(position);
         singleItem.bindMyCityData(place);
     }
 
@@ -63,7 +64,7 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter <MyRecyclerAdapter.m
         }
 
         @SuppressLint("ResourceType")
-        public void bindMyCityData(final Place place) {
+        public void bindMyCityData(final PlacesTable place) {
 
             // title
             TextView title = holderView.findViewById(R.id.title_TV);
@@ -74,43 +75,50 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter <MyRecyclerAdapter.m
             // address
             TextView address = holderView.findViewById(R.id.address_TV);
 
-            String PlaceAddress = null;
+            String placeAddress = null;
 
-            //if i use the textSearch API
-            if(!searchWithLocationAPI){
-                PlaceAddress = place.getFormatted_address();
+            if (place.getFormatted_address() == null && place.getVicinity() == null) {
 
-            //if i use nearBy API
-            }else {
-                PlaceAddress = place.getVicinity();
+                placeAddress = "";
+
+            } else if (place.getFormatted_address() != null) {
+
+                placeAddress = place.getFormatted_address();
+            } else {
+
+                placeAddress = place.getVicinity();
             }
 
-            if(!PlaceAddress.contains(",")){
 
-                address.setText(PlaceAddress);
-            }else{
+            if(!placeAddress.contains(",")){
 
-                String[] parts = PlaceAddress.split(",", 2);
+                address.setText(placeAddress);
+
+            }else if(!placeAddress.equals("")) {
+
+                String[] parts = placeAddress.split(",", 2);
                 String part1 = parts[0]; // address
                 String part2 = parts[1]; // country
 
                 address.setText(part1 + "\n" + part2.substring(1));
             }
+
 //--------------------------------------------------------------------------------------------------
 
-            // open or close - boolean
+            // open or close - String
             TextView openOrCloseSing = holderView.findViewById(R.id.openOrCloseSing);
 
-            //if don't have open hours array at all
-            if(place.getOpening_hours() == null){
+            //if don't have open hours data
+            if(place.getOpening_hours() == null) {
 
-                // don't show this text
                 openOrCloseSing.setVisibility(View.INVISIBLE);
-            }else if (place.getOpening_hours() != null && place.getOpening_hours().isOpen_now() == true) {
+
+            }else if(place.getOpening_hours().equals("true")){
 
                 openOrCloseSing.setBackgroundResource(R.drawable.open_shape);
                 openOrCloseSing.setText(R.string.open);
-            } else if (place.getOpening_hours() != null && place.getOpening_hours().isOpen_now() == false) {
+
+            }else{
                 openOrCloseSing.setText(R.string.closed);
                 openOrCloseSing.setBackgroundResource(R.drawable.close_shape);
             }
@@ -121,9 +129,9 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter <MyRecyclerAdapter.m
             ImageView imageView = holderView.findViewById(R.id.imageView);
 
             //check if there is any image resource in the Photo list array
-            if(place.getPhotos() != null && place.getPhotos().get(0).getPhoto_reference() != null){
+            if(!place.getPhoto_reference().equals("")){
 
-                String reference = place.getPhotos().get(0).getPhoto_reference();
+                String reference = place.getPhoto_reference();
 
 
                 String url = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=" + reference + "&key=AIzaSyBwpg6a0MQuMKzVTHlwzCmhTksktUCqHf8";
@@ -139,7 +147,7 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter <MyRecyclerAdapter.m
             // km || miles
             TextView meters = holderView.findViewById(R.id.KM_TV);
 
-            LatLng endP = new LatLng(place.getGeometry().getLocation().getLat(), place.getGeometry().getLocation().getLng());
+            LatLng endP = new LatLng(place.getLat(), place.getLng());
 
             CalculateDistance calculateDistance = new CalculateDistance();
             double distance = calculateDistance.getDistance(latLng, endP);

@@ -2,23 +2,24 @@ package com.example.user.findplacesnearfinal.Activity;
 
 import android.content.Context;
 import android.content.res.Configuration;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.example.user.findplacesnearfinal.Fragments.FavoritesFragment;
-import com.example.user.findplacesnearfinal.Model.Place;
-import com.example.user.findplacesnearfinal.R;
 import com.example.user.findplacesnearfinal.Fragments.SearchFragment;
+import com.example.user.findplacesnearfinal.R;
 import com.example.user.findplacesnearfinal.Service.MyFragmentChanger;
+import com.example.user.findplacesnearfinal.DataBase.PlacesTable;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.orm.SugarContext;
 
 public class MainActivity extends AppCompatActivity implements MyFragmentChanger{
 
@@ -30,12 +31,12 @@ public class MainActivity extends AppCompatActivity implements MyFragmentChanger
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        SugarContext.init(this);
+
         mapFragment = new MapFragment();
         favoritesFragment = new FavoritesFragment();
-
         screenPositionOrder();
         setToolBar();
-
     }
 
 //-------------------------------------------------------------------------------------------------
@@ -125,7 +126,7 @@ public class MainActivity extends AppCompatActivity implements MyFragmentChanger
      */
 
     @Override
-    public void changeFragments(final Place place) {
+    public void changeFragments(final PlacesTable place) {
 
         if(isPortrait()) {
             mapFragment = new MapFragment();
@@ -136,7 +137,7 @@ public class MainActivity extends AppCompatActivity implements MyFragmentChanger
             public void onMapReady(GoogleMap googleMap) {
                 googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
 
-                LatLng latLng = new LatLng(place.getGeometry().getLocation().getLat(),place.getGeometry().getLocation().getLng());
+                LatLng latLng = new LatLng(place.getLat(),place.getLng());
                 //update location and zoom 0 is the most far
                 googleMap.addMarker(new MarkerOptions().position(latLng));
                 googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng , 10));
