@@ -66,10 +66,9 @@
                 android:orientation="horizontal">
 
                 <TextView
-                    android:layout_marginLeft="2dp"
                     android:id="@+id/openOrCloseSing"
-                    android:layout_width="63dp"
-                    android:layout_height="28dp"
+                    android:layout_width="64dp"
+                    android:layout_height="29dp"
                     android:layout_marginBottom="8dp"
                     android:layout_marginTop="8dp"
                     android:background="@drawable/open_shape"
@@ -90,7 +89,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
-                    android:layout_marginEnd="4dp"
                     android:layout_marginTop="8dp"
                     android:text="55km"
                     android:textSize="18sp"

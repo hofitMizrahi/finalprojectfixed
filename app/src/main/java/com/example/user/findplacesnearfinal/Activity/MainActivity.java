@@ -148,4 +148,11 @@ public class MainActivity extends AppCompatActivity implements MyFragmentChanger
         });
 
     }
+
+    @Override
+    public void changeToFavorietsFragment() {
+
+        getFragmentManager().beginTransaction().addToBackStack("replacing").replace(R.id.main_portrait_layout, favoritesFragment).commit();
+
+    }
 }

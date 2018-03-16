@@ -2,14 +2,18 @@ package com.example.user.findplacesnearfinal.Adapters;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import com.example.user.findplacesnearfinal.CalculateDistance;
+import com.example.user.findplacesnearfinal.DataBase.FavorietsTableDB;
 import com.example.user.findplacesnearfinal.R;
 import com.example.user.findplacesnearfinal.Service.MyFragmentChanger;
 import com.example.user.findplacesnearfinal.DataBase.PlacesTable;
@@ -17,8 +21,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
-
-import static com.example.user.findplacesnearfinal.Fragments.SearchFragment.searchWithLocationAPI;
 
 public class MyRecyclerAdapter extends RecyclerView.Adapter <MyRecyclerAdapter.myViewHolder> {
 
@@ -36,7 +38,7 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter <MyRecyclerAdapter.m
     @Override
     public myViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
-        View view = LayoutInflater.from(context).inflate(R.layout.single_item_model, null);//getContext refers to get value of context variable
+        View view = LayoutInflater.from(context).inflate(R.layout.single_item_model, null);
         myViewHolder viewHolder = new myViewHolder(view);
         return viewHolder;
     }
@@ -53,14 +55,14 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter <MyRecyclerAdapter.m
         return placeArrayList.size();
     }
 
-    public class myViewHolder extends RecyclerView.ViewHolder{
+    public class myViewHolder extends RecyclerView.ViewHolder {
 
         View holderView;
 
-         public myViewHolder(View itemView) {
-         super(itemView);
+        public myViewHolder(View itemView) {
+            super(itemView);
 
-         this.holderView = itemView;
+            this.holderView = itemView;
         }
 
         @SuppressLint("ResourceType")
@@ -75,102 +77,132 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter <MyRecyclerAdapter.m
             // address
             TextView address = holderView.findViewById(R.id.address_TV);
 
-            String placeAddress = null;
+            String placeAddress = place.getAddress();
 
-            if (place.getFormatted_address() == null && place.getVicinity() == null) {
+            if (placeAddress == null) {
 
                 placeAddress = "";
 
-            } else if (place.getFormatted_address() != null) {
+                if (!placeAddress.contains(",")) {
 
-                placeAddress = place.getFormatted_address();
-            } else {
+                    address.setText(placeAddress);
 
-                placeAddress = place.getVicinity();
-            }
+                } else {
 
+                    String[] parts = placeAddress.split(",", 2);
+                    String part1 = parts[0]; // address
+                    String part2 = parts[1]; // country
 
-            if(!placeAddress.contains(",")){
-
-                address.setText(placeAddress);
-
-            }else if(!placeAddress.equals("")) {
-
-                String[] parts = placeAddress.split(",", 2);
-                String part1 = parts[0]; // address
-                String part2 = parts[1]; // country
-
-                address.setText(part1 + "\n" + part2.substring(1));
+                    address.setText(part1 + "\n" + part2.substring(1));
+                }
             }
 
 //--------------------------------------------------------------------------------------------------
 
-            // open or close - String
-            TextView openOrCloseSing = holderView.findViewById(R.id.openOrCloseSing);
+                // open or close - String
+                TextView openOrCloseSing = holderView.findViewById(R.id.openOrCloseSing);
 
-            //if don't have open hours data
-            if(place.getOpening_hours() == null) {
+                //if don't have open hours data
+                if (place.getOpening_hours() == null) {
 
-                openOrCloseSing.setVisibility(View.INVISIBLE);
+                    openOrCloseSing.setVisibility(View.INVISIBLE);
 
-            }else if(place.getOpening_hours().equals("true")){
+                } else if (place.getOpening_hours().equals("true")) {
 
-                openOrCloseSing.setBackgroundResource(R.drawable.open_shape);
-                openOrCloseSing.setText(R.string.open);
+                    openOrCloseSing.setBackgroundResource(R.drawable.open_shape);
+                    openOrCloseSing.setText(R.string.open);
 
-            }else{
-                openOrCloseSing.setText(R.string.closed);
-                openOrCloseSing.setBackgroundResource(R.drawable.close_shape);
-            }
-
-
-
-            //image resource
-            ImageView imageView = holderView.findViewById(R.id.imageView);
-
-            //check if there is any image resource in the Photo list array
-            if(!place.getPhoto_reference().equals("")){
-
-                String reference = place.getPhoto_reference();
+                } else {
+                    openOrCloseSing.setText(R.string.closed);
+                    openOrCloseSing.setBackgroundResource(R.drawable.close_shape);
+                }
 
 
-                String url = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=" + reference + "&key=AIzaSyBwpg6a0MQuMKzVTHlwzCmhTksktUCqHf8";
-                Picasso.with(context)
-                        .load(url)
-                        .resize(90, 90)
-                        .centerCrop()
-                        .into(imageView);
-            }
+                //image resource
+                ImageView imageView = holderView.findViewById(R.id.imageView);
+
+                //check if there is any image resource in the Photo list array
+                if (!place.getPhoto_reference().equals("")) {
+
+                    String reference = place.getPhoto_reference();
+
+
+                    String url = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=" + reference + "&key=AIzaSyBwpg6a0MQuMKzVTHlwzCmhTksktUCqHf8";
+                    Picasso.with(context)
+                            .load(url)
+                            .resize(90, 90)
+                            .centerCrop()
+                            .into(imageView);
+                }
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
-            // km || miles
-            TextView meters = holderView.findViewById(R.id.KM_TV);
+                // km || miles
+                TextView meters = holderView.findViewById(R.id.KM_TV);
 
-            LatLng endP = new LatLng(place.getLat(), place.getLng());
+                LatLng endP = new LatLng(place.getLat(), place.getLng());
 
-            CalculateDistance calculateDistance = new CalculateDistance();
-            double distance = calculateDistance.getDistance(latLng, endP);
+                CalculateDistance calculateDistance = new CalculateDistance();
+                double distance = calculateDistance.getDistance(latLng, endP);
 
-            String allmeters = String.valueOf(round(distance, 1));
+                String allmeters = String.valueOf(round(distance, 1));
 
-            meters.setText(allmeters);
+                meters.setText(allmeters);
 
 //-------------------------------------------------------------------------------------------------------------------------------------------
 
-            holderView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
+                holderView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
 
-                    //Replaces fragment to mapFragment and displays the location by the name of the place you clicked
-                    MyFragmentChanger cityChanger = (MyFragmentChanger) context;
-                    cityChanger.changeFragments(place);
-                }
-            });
+                        //Replaces fragment to mapFragment and displays the location by the name of the place you clicked
+                        MyFragmentChanger cityChanger = (MyFragmentChanger) context;
+                        cityChanger.changeFragments(place);
+                    }
+                });
+
+                holderView.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View v) {
+
+
+                        //creating a popup menu
+                        PopupMenu popup = new PopupMenu(context, holderView);
+                        //inflating menu from xml resource
+                        popup.inflate(R.menu.item_popup_menu);
+                        //adding click listener
+                        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+
+                            @Override
+                            public boolean onMenuItemClick(MenuItem item) {
+                                switch (item.getItemId()) {
+                                    case R.id.favorit_save:
+                                        //
+                                        FavorietsTableDB favorietsTableDB = new FavorietsTableDB(place.getName(), place.getPhoto_reference());
+                                        favorietsTableDB.save();
+                                        break;
+
+                                    case R.id.share:
+
+                                        Intent sendIntent = new Intent();
+                                        sendIntent.setAction(Intent.ACTION_SEND);
+                                        sendIntent.putExtra(Intent.EXTRA_TEXT, "This is my text to send.");
+                                        sendIntent.setType("text/plain");
+                                        context.startActivity(sendIntent);
+                                        break;
+                                }
+                                return false;
+                            }
+                        });
+                        //displaying the popup
+                        popup.show();
+                        return true;
+                    }
+                });
+            }
+
         }
 
-
-        }
 
         private double round(double value, int places) {
             if (places < 0) throw new IllegalArgumentException();
@@ -180,5 +212,4 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter <MyRecyclerAdapter.m
             long tmp = Math.round(value);
             return (double) tmp / factor;
         }
-
 }

@@ -56,4 +56,6 @@ dependencies {
     //google Play service
     implementation 'com.google.android.gms:play-services:11.6.2'
 
+    //SeekBar Library
+    compile 'com.xw.repo:bubbleseekbar:3.5-lite'
 }

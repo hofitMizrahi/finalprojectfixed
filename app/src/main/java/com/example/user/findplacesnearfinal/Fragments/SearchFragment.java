@@ -6,11 +6,15 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
@@ -24,6 +28,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.user.findplacesnearfinal.Adapters.MyRecyclerAdapter;
@@ -37,6 +42,7 @@ import com.example.user.findplacesnearfinal.DataBase.PlacesTable;
 import com.example.user.findplacesnearfinal.remote.RetrofitClient;
 import com.google.android.gms.maps.model.LatLng;
 import com.orm.SugarContext;
+import com.xw.repo.BubbleSeekBar;
 
 import java.util.ArrayList;
 
@@ -61,6 +67,7 @@ public class SearchFragment extends Fragment implements LocationListener {
     EditText searchTXT;
     Button locationBtn;
     SeekBar seekBar;
+    int myProgress;
 
     ArrayList<PlacesTable> allPlaces;
 
@@ -84,7 +91,28 @@ public class SearchFragment extends Fragment implements LocationListener {
         //initialization the RecyclerView, the location button, seekBar
         recyclerView = myView.findViewById(R.id.myList_RV);
         locationBtn = myView.findViewById(R.id.locationChangeBtn);
-        seekBar = myView.findViewById(R.id.seekBar);
+
+        seekBar = myView.findViewById(R.id.mySeekBar_id);
+
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+                Log.i("Progress", String.valueOf(progress) );
+                myProgress = progress;
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
 
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -184,7 +212,7 @@ public class SearchFragment extends Fragment implements LocationListener {
                     } else {
 
                         Toast.makeText(getActivity(), "nearBy", Toast.LENGTH_SHORT).show();
-                        String radius = "1000";
+                        String radius = String.valueOf(myProgress * 1000);
 
                         repos = apiService.getNearbyResults(lastKnowLoc, radius, textEnteredByTheUser, API_KEY);
                     }
@@ -210,10 +238,13 @@ public class SearchFragment extends Fragment implements LocationListener {
                                 for (int i = 0; i < results.getResults().size(); i++) {
 
                                     Place place = results.getResults().get(i);
-                                    String photo = place.getPhotos().get(0).getPhoto_reference();
-                                    if (photo == null) {
+                                    String photo ="";
 
+                                    if(place.getPhotos() == null){
                                         photo = "";
+                                    }else {
+
+                                        photo = place.getPhotos().get(0).getPhoto_reference();
                                     }
 
                                     String isOpen = null;
@@ -229,12 +260,21 @@ public class SearchFragment extends Fragment implements LocationListener {
                                         isOpen = "false";
                                     }
 
+                                    String placeAddress = "";
+                                    if(place.getFormatted_address() != null){
+
+                                        placeAddress = place.getFormatted_address();
+                                    }else if(place.getVicinity() != null){
+
+                                        placeAddress = place.getVicinity();
+                                    }
+
 
                                     PlacesTable sugarPlaceTable = new PlacesTable(place.getGeometry().getLocation().getLat(),
                                             place.getGeometry().getLocation().getLng(),
                                             place.getIcon(), place.getName(), isOpen,
                                             photo, place.getRating(), place.getTypes(),
-                                            place.getVicinity(), place.getFormatted_address()
+                                            placeAddress
                                     );
 
                                     sugarPlaceTable.save();
