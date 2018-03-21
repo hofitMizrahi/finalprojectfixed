@@ -9,6 +9,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.example.user.findplacesnearfinal.Fragments.FavoritesFragment;
+import com.example.user.findplacesnearfinal.Fragments.FragmentB;
 import com.example.user.findplacesnearfinal.Fragments.SearchFragment;
 import com.example.user.findplacesnearfinal.R;
 import com.example.user.findplacesnearfinal.Service.MyFragmentChanger;
@@ -57,9 +58,10 @@ public class MainActivity extends AppCompatActivity implements MyFragmentChanger
         } else if (!isTablet(this) && !isPortrait() || isTablet(this)) {
 
             SearchFragment searchFragment = new SearchFragment();
+            FragmentB fragmentB = new FragmentB();
             getFragmentManager().beginTransaction().addToBackStack("replacing").replace(R.id.search_tablet_layout, searchFragment).commit();
 
-            getFragmentManager().beginTransaction().addToBackStack("replacing").replace(R.id.tablet_map_layout, mapFragment).commit();
+            getFragmentManager().beginTransaction().addToBackStack("replacing").replace(R.id.tablet_map_layout, fragmentB).commit();
         }
     }
 
@@ -105,8 +107,7 @@ public class MainActivity extends AppCompatActivity implements MyFragmentChanger
 
             case R.id.favorite_popup:
 
-                getFragmentManager().beginTransaction().addToBackStack("replacing").replace(R.id.main_portrait_layout, favoritesFragment).commit();
-
+                changeToFavorietsFragment();
         }
         return true;
     }
@@ -129,8 +130,10 @@ public class MainActivity extends AppCompatActivity implements MyFragmentChanger
     public void changeFragments(final PlacesTable place) {
 
         if(isPortrait()) {
+            FragmentB fragmentB = new FragmentB();
+
             mapFragment = new MapFragment();
-            getFragmentManager().beginTransaction().addToBackStack("replacing").replace(R.id.main_portrait_layout, mapFragment).commit();
+            getFragmentManager().beginTransaction().addToBackStack("replacing").replace(R.id.main_portrait_layout, fragmentB).commit();
         }
         mapFragment.getMapAsync(new OnMapReadyCallback() {
             @Override

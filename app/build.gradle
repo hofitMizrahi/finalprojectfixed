@@ -58,4 +58,11 @@ dependencies {
 
     //SeekBar Library
     compile 'com.xw.repo:bubbleseekbar:3.5-lite'
+
+    //ImageShape library
+    compile 'com.github.siyamed:android-shape-imageview:0.9.+@aar'
+
+    //SlidePanel
+    compile 'com.sothree.slidinguppanel:library:3.4.0'
+
 }
