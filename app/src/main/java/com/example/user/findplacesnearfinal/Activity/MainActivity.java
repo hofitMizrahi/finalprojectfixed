@@ -1,16 +1,22 @@
 package com.example.user.findplacesnearfinal.Activity;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.WindowManager;
+import android.widget.Toast;
 
 import com.example.user.findplacesnearfinal.Fragments.FavoritesFragment;
-import com.example.user.findplacesnearfinal.Fragments.FragmentB;
+import com.example.user.findplacesnearfinal.Fragments.InfoFragment;
 import com.example.user.findplacesnearfinal.Fragments.SearchFragment;
+import com.example.user.findplacesnearfinal.Fragments.MyPerfsFragment;
 import com.example.user.findplacesnearfinal.R;
 import com.example.user.findplacesnearfinal.Service.MyFragmentChanger;
 import com.example.user.findplacesnearfinal.DataBase.PlacesTable;
@@ -27,18 +33,60 @@ public class MainActivity extends AppCompatActivity implements MyFragmentChanger
     MapFragment mapFragment;
     FavoritesFragment favoritesFragment;
 
+    BroadcastReceiver connectedBroadcast;
+    BroadcastReceiver disconnectedBroadcast;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //refresh sugar database
         SugarContext.init(this);
 
+        //settings for UI
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+
+        //initialize the fragment
         mapFragment = new MapFragment();
         favoritesFragment = new FavoritesFragment();
+
+        //set up the screen
         screenPositionOrder();
+
+        //set up the custom tool bar
         setToolBar();
+
+        //connected to Broadcast to listen the mobile Power
+        connectedOrDisConnectedPowerChanging();
+
     }
+
+    private void connectedOrDisConnectedPowerChanging() {
+
+        connectedBroadcast = new BroadcastReceiver() {
+
+            @Override
+            public void onReceive(Context context, Intent intent) {
+
+                Toast.makeText(context, "Power Connected", Toast.LENGTH_SHORT).show();
+            }
+        };
+
+        registerReceiver(connectedBroadcast, new IntentFilter(Intent.ACTION_POWER_CONNECTED) );
+
+        disconnectedBroadcast = new BroadcastReceiver() {
+
+            @Override
+            public void onReceive(Context context, Intent intent) {
+
+                Toast.makeText(context, "Power Disconnected", Toast.LENGTH_SHORT).show();
+            }
+        };
+
+        registerReceiver(disconnectedBroadcast, new IntentFilter(Intent.ACTION_POWER_DISCONNECTED) );
+    }
+
 
 //-------------------------------------------------------------------------------------------------
 
@@ -58,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements MyFragmentChanger
         } else if (!isTablet(this) && !isPortrait() || isTablet(this)) {
 
             SearchFragment searchFragment = new SearchFragment();
-            FragmentB fragmentB = new FragmentB();
+            InfoFragment fragmentB = new InfoFragment();
             getFragmentManager().beginTransaction().addToBackStack("replacing").replace(R.id.search_tablet_layout, searchFragment).commit();
 
             getFragmentManager().beginTransaction().addToBackStack("replacing").replace(R.id.tablet_map_layout, fragmentB).commit();
@@ -91,7 +139,7 @@ public class MainActivity extends AppCompatActivity implements MyFragmentChanger
 //-------------------------------------------------------------------------------------------------
 
     /**
-     * menu
+     * menu && toolBar
      */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -108,6 +156,17 @@ public class MainActivity extends AppCompatActivity implements MyFragmentChanger
             case R.id.favorite_popup:
 
                 changeToFavorietsFragment();
+                break;
+
+            case R.id.closeApp:
+
+                finish();
+                break;
+
+            case R.id.showSettings:
+                getFragmentManager().beginTransaction().addToBackStack("replacing")
+                        .replace(R.id.main_portrait_layout, new MyPerfsFragment()).commit();
+                break;
         }
         return true;
     }
@@ -122,7 +181,6 @@ public class MainActivity extends AppCompatActivity implements MyFragmentChanger
 //--------------------------------------------------------------------------------------------------------------
 
     /**
-     *
      * @param place - Place Object to send the map Fragment
      */
 
@@ -130,7 +188,7 @@ public class MainActivity extends AppCompatActivity implements MyFragmentChanger
     public void changeFragments(final PlacesTable place) {
 
         if(isPortrait()) {
-            FragmentB fragmentB = new FragmentB();
+            InfoFragment fragmentB = new InfoFragment(place);
 
             mapFragment = new MapFragment();
             getFragmentManager().beginTransaction().addToBackStack("replacing").replace(R.id.main_portrait_layout, fragmentB).commit();
@@ -149,13 +207,21 @@ public class MainActivity extends AppCompatActivity implements MyFragmentChanger
 
             }
         });
-
     }
 
     @Override
     public void changeToFavorietsFragment() {
 
         getFragmentManager().beginTransaction().addToBackStack("replacing").replace(R.id.main_portrait_layout, favoritesFragment).commit();
+
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        unregisterReceiver(connectedBroadcast);
+        unregisterReceiver(disconnectedBroadcast);
 
     }
 }

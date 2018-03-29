@@ -19,11 +19,12 @@ public class PlacesTable extends SugarRecord{
     private double rating;
     private String[] types;
     private String address;
+    private boolean isFavoriet;
 
     public PlacesTable() {
     }
 
-    public PlacesTable(double lat, double lng, String icon, String name, String isOpen, String photo_reference, double rating, String[] types, String address) {
+    public PlacesTable(double lat, double lng, String icon, String name, String isOpen, String photo_reference, double rating, String[] types, String address, boolean isFavoriet) {
         this.lat = lat;
         this.lng = lng;
         this.icon = icon;
@@ -33,6 +34,7 @@ public class PlacesTable extends SugarRecord{
         this.rating = rating;
         this.types = types;
         this.address = address;
+        this.isFavoriet = isFavoriet;
     }
 
     public double getLat() {
@@ -69,5 +71,13 @@ public class PlacesTable extends SugarRecord{
 
     public String getAddress() {
         return address;
+    }
+
+    public boolean isFavoriet() {
+        return isFavoriet;
+    }
+
+    public String isOpen() {
+        return isOpen;
     }
 }

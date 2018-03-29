@@ -5,18 +5,17 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.app.Fragment;
-import android.provider.Settings;
+import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
@@ -27,13 +26,12 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.user.findplacesnearfinal.Adapters.MyRecyclerAdapter;
 import com.example.user.findplacesnearfinal.Helper.SwipeController;
-import com.example.user.findplacesnearfinal.Model.OpenHours;
 import com.example.user.findplacesnearfinal.Model.Place;
 import com.example.user.findplacesnearfinal.Model.allResults;
 import com.example.user.findplacesnearfinal.R;
@@ -42,7 +40,6 @@ import com.example.user.findplacesnearfinal.DataBase.PlacesTable;
 import com.example.user.findplacesnearfinal.remote.RetrofitClient;
 import com.google.android.gms.maps.model.LatLng;
 import com.orm.SugarContext;
-import com.xw.repo.BubbleSeekBar;
 
 import java.util.ArrayList;
 
@@ -69,6 +66,8 @@ public class SearchFragment extends Fragment implements LocationListener {
     SeekBar seekBar;
     int myProgress;
 
+    private Boolean prefUseKm;
+
     ArrayList<PlacesTable> allPlaces;
 
     // Required empty public constructor
@@ -82,15 +81,16 @@ public class SearchFragment extends Fragment implements LocationListener {
         //inflate the layout
         myView = inflater.inflate(R.layout.search_fragment, container, false);
 
-        SugarContext.init(getActivity());
-
         //initialization the LocationManager
-        //check permission && GPS
         locationManager = (LocationManager) getActivity().getSystemService(LOCATION_SERVICE);
+
+        //get the user miles or Km pref
+        getKmOrMilesFromPrefrences();
 
         //initialization the RecyclerView, the location button, seekBar
         recyclerView = myView.findViewById(R.id.myList_RV);
         locationBtn = myView.findViewById(R.id.locationChangeBtn);
+
 
         seekBar = myView.findViewById(R.id.mySeekBar_id);
 
@@ -98,7 +98,7 @@ public class SearchFragment extends Fragment implements LocationListener {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 
-                Log.i("Progress", String.valueOf(progress) );
+                Log.i("Progress", String.valueOf(progress));
                 myProgress = progress;
             }
 
@@ -112,7 +112,6 @@ public class SearchFragment extends Fragment implements LocationListener {
 
             }
         });
-
 
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -131,7 +130,7 @@ public class SearchFragment extends Fragment implements LocationListener {
             searchWithLocationAPI = true;
             locationBtn.setBackgroundResource(R.drawable.location_green);
             setRecyclerFromDB();
-        }else {
+        } else {
 
             isGpsEnable();
             checkLocationPermission();
@@ -149,14 +148,14 @@ public class SearchFragment extends Fragment implements LocationListener {
 
                 // if gps image is ON (R.drawable.location_green) --> the locationButton change to OFF
                 if (locationBtn.getBackground().getConstantState()
-                    == getResources().getDrawable(R.drawable.location_green)
-                    .getConstantState()) {
+                        == getResources().getDrawable(R.drawable.location_green)
+                        .getConstantState()) {
 
                     locationBtn.setBackgroundResource(R.drawable.not_location);
                     seekBar.setVisibility(View.INVISIBLE);
                     searchWithLocationAPI = false;
 
-                // if user wont to set the Gps btn to ON - gps need to be Enable and also the permission check are true
+                    // if user wont to set the Gps btn to ON - gps need to be Enable and also the permission check are true
                 } else if (locationBtn.getBackground().getConstantState()
                         == getResources().getDrawable(R.drawable.not_location)
                         .getConstantState()
@@ -193,116 +192,132 @@ public class SearchFragment extends Fragment implements LocationListener {
 
                 // take the text that the user enter to EditText
                 String textEnteredByTheUser = getUserText();
-                GitHubService apiService = RetrofitClient.getClient().create(GitHubService.class);
-                Call<allResults> repos = null;
 
-                //if user don't write nothing
-                if (textEnteredByTheUser.equals("")) {
+                doRetrofitCallAndUpdateDatabase(textEnteredByTheUser);
+                setRecyclerFromDB();
 
-                    Toast.makeText(getActivity(), "please enter something", Toast.LENGTH_SHORT).show();
-
-                } else {
-
-                    //if user wont to search by text and don't wont to use GPS!!
-                    if (!searchWithLocationAPI) {
-
-                        Toast.makeText(getActivity(), "text", Toast.LENGTH_SHORT).show();
-                        repos = apiService.getTextSearchResults(textEnteredByTheUser, API_KEY);
-
-                    } else {
-
-                        Toast.makeText(getActivity(), "nearBy", Toast.LENGTH_SHORT).show();
-                        String radius = String.valueOf(myProgress * 1000);
-
-                        repos = apiService.getNearbyResults(lastKnowLoc, radius, textEnteredByTheUser, API_KEY);
-                    }
-
-                    repos.enqueue(new Callback<allResults>() {
-
-                        @Override
-                        public void onResponse(Call<allResults> call, Response<allResults> response) {
-
-                            Toast.makeText(getActivity(), "its works(:", Toast.LENGTH_SHORT).show();
-                            allResults results = response.body();
-
-                            if (results.getResults().isEmpty()) {
-
-                                //if i have zero results
-                                Toast.makeText(getActivity(), "No Results - no data in the array", Toast.LENGTH_SHORT).show();
-
-                                //i have results in the array
-                            } else {
-
-                                PlacesTable.deleteAll(PlacesTable.class);
-
-                                for (int i = 0; i < results.getResults().size(); i++) {
-
-                                    Place place = results.getResults().get(i);
-                                    String photo ="";
-
-                                    if(place.getPhotos() == null){
-                                        photo = "";
-                                    }else {
-
-                                        photo = place.getPhotos().get(0).getPhoto_reference();
-                                    }
-
-                                    String isOpen = null;
-
-                                    if (place.getOpening_hours() == null) {
-
-                                        isOpen = null;
-
-                                    } else if(place.getOpening_hours() != null && place.getOpening_hours().isOpen_now() == true) {
-
-                                        isOpen = "true";
-                                    }else {
-                                        isOpen = "false";
-                                    }
-
-                                    String placeAddress = "";
-                                    if(place.getFormatted_address() != null){
-
-                                        placeAddress = place.getFormatted_address();
-                                    }else if(place.getVicinity() != null){
-
-                                        placeAddress = place.getVicinity();
-                                    }
-
-
-                                    PlacesTable sugarPlaceTable = new PlacesTable(place.getGeometry().getLocation().getLat(),
-                                            place.getGeometry().getLocation().getLng(),
-                                            place.getIcon(), place.getName(), isOpen,
-                                            photo, place.getRating(), place.getTypes(),
-                                            placeAddress
-                                    );
-
-                                    sugarPlaceTable.save();
-                                }
-                            }
-
-                            allPlaces = (ArrayList<PlacesTable>) PlacesTable.listAll(PlacesTable.class);
-
-                            setRecyclerFromDB();
-
-                        }
-
-                        @Override
-                        public void onFailure(Call<allResults> call, Throwable t) {
-
-                            Toast.makeText(getActivity(), "fail call", Toast.LENGTH_SHORT).show();
-
-                        }
-
-                    });
-                }
             }
 
         });
 
+        //ok in key bord
+        /* yourEditText.setOnEditorActionListener(
+        new EditText.OnEditorActionListener() {
+    @Override
+    public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+          if (actionId == EditorInfo.IME_ACTION_DONE) {
+             your code here
+    }
+}
+});*/
+
         return myView;
     }
 
+    private void doRetrofitCallAndUpdateDatabase(String textEnteredByTheUser) {
+
+        GitHubService apiService = RetrofitClient.getClient().create(GitHubService.class);
+        Call<allResults> repos = null;
+
+        //if user don't write nothing
+        if (textEnteredByTheUser.equals("")) {
+
+            Toast.makeText(getActivity(), "please enter something", Toast.LENGTH_SHORT).show();
+
+        } else {
+
+            //if user wont to search by text and don't wont to use GPS!!
+            if (!searchWithLocationAPI) {
+
+                Toast.makeText(getActivity(), "text", Toast.LENGTH_SHORT).show();
+                repos = apiService.getTextSearchResults(textEnteredByTheUser, API_KEY);
+
+            } else {
+
+                Toast.makeText(getActivity(), "nearBy", Toast.LENGTH_SHORT).show();
+                String radius = String.valueOf(myProgress * 1000);
+
+                repos = apiService.getNearbyResults(lastKnowLoc, radius, textEnteredByTheUser, API_KEY);
+            }
+
+            repos.enqueue(new Callback<allResults>() {
+
+                @Override
+                public void onResponse(Call<allResults> call, Response<allResults> response) {
+
+                    Toast.makeText(getActivity(), "its works(:", Toast.LENGTH_SHORT).show();
+                    allResults results = response.body();
+
+                    if (results.getResults().isEmpty()) {
+
+                        //if i have zero results
+                        Toast.makeText(getActivity(), "No Results - no data in the array", Toast.LENGTH_SHORT).show();
+
+                        //i have results in the array
+                    } else {
+
+                        PlacesTable.deleteAll(PlacesTable.class);
+
+                        for (int i = 0; i < results.getResults().size(); i++) {
+
+                            Place place = results.getResults().get(i);
+                            String photo = "";
+
+                            if (place.getPhotos() == null) {
+                                photo = "";
+                            } else {
+
+                                photo = place.getPhotos().get(0).getPhoto_reference();
+                            }
+
+                            String isOpen = null;
+
+                            if (place.getOpening_hours() == null) {
+
+                                isOpen = null;
+
+                            } else if (place.getOpening_hours() != null && place.getOpening_hours().isOpen_now() == true) {
+
+                                isOpen = "true";
+                            } else {
+                                isOpen = "false";
+                            }
+
+                            String placeAddress = "";
+                            if (place.getFormatted_address() != null) {
+
+                                placeAddress = place.getFormatted_address();
+                            } else if (place.getVicinity() != null) {
+
+                                placeAddress = place.getVicinity();
+                            }
+
+                            //@TODO check if the item is alredy on the favorites
+
+                            PlacesTable sugarPlaceTable = new PlacesTable(place.getGeometry().getLocation().getLat(),
+                                    place.getGeometry().getLocation().getLng(),
+                                    place.getIcon(), place.getName(), isOpen,
+                                    photo, place.getRating(), place.getTypes(),
+                                    placeAddress, false
+                            );
+
+                            sugarPlaceTable.save();
+                        }
+                    }
+
+                    allPlaces = (ArrayList<PlacesTable>) PlacesTable.listAll(PlacesTable.class);
+                }
+
+                @Override
+                public void onFailure(Call<allResults> call, Throwable t) {
+
+                    Toast.makeText(getActivity(), "fail call", Toast.LENGTH_SHORT).show();
+
+                }
+
+            });
+        }
+    }
 //--------------------------------------------------------------------------------------------------------------------
 
     /**
@@ -538,6 +553,33 @@ public class SearchFragment extends Fragment implements LocationListener {
         }
         Toast.makeText(getActivity(), "GPS is Enable!", Toast.LENGTH_LONG).show();
         return true;
+    }
+
+//---------------------------------------------------------------------------------------------------------------------
+
+    //get the value from shared Prefrences
+    public void  getKmOrMilesFromPrefrences(){
+
+        SharedPreferences sharedPreferences= PreferenceManager.getDefaultSharedPreferences(getActivity());
+        //get value from SharedPrefs
+        String showInList = sharedPreferences.getString("list_preference", "list");
+
+        if(showInList.equals("Km")) {
+
+            Toast.makeText(getActivity(), "Km", Toast.LENGTH_SHORT).show();
+            prefUseKm = true;
+        }
+        else if(showInList.equals("Miles"))
+        {
+            Toast.makeText(getActivity(), "miles", Toast.LENGTH_SHORT).show();
+            prefUseKm = false;
+
+        }else {
+
+            Toast.makeText(getActivity(), "force KM", Toast.LENGTH_SHORT).show();
+            prefUseKm = true;
+        }
+
     }
 
 }

@@ -3,12 +3,17 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:title="Km/miles"
-        android:id="@+id/km_popup"/>
+    android:id="@+id/showSettings"
+    android:title="Settings"/>
 
     <item
-        android:title="delete favorits"
+        android:title="Delete favorits"
         android:id="@+id/delete_popup"/>
+
+    <item
+        android:title="Exit"
+        android:id="@+id/closeApp"/>
+
 
     <item
         android:title="favorits"

@@ -82,12 +82,13 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter <MyRecyclerAdapter.m
             if (placeAddress == null) {
 
                 placeAddress = "";
+            }
 
                 if (!placeAddress.contains(",")) {
 
                     address.setText(placeAddress);
 
-                } else {
+                }else{
 
                     String[] parts = placeAddress.split(",", 2);
                     String part1 = parts[0]; // address
@@ -95,7 +96,7 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter <MyRecyclerAdapter.m
 
                     address.setText(part1 + "\n" + part2.substring(1));
                 }
-            }
+
 
 //--------------------------------------------------------------------------------------------------
 
@@ -151,19 +152,14 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter <MyRecyclerAdapter.m
 
 //-------------------------------------------------------------------------------------------------------------------------------------------
 
-                holderView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
+                holderView.setOnClickListener((View v) -> {
 
-                        //Replaces fragment to mapFragment and displays the location by the name of the place you clicked
-                        MyFragmentChanger cityChanger = (MyFragmentChanger) context;
-                        cityChanger.changeFragments(place);
-                    }
+                    //Replaces fragment to mapFragment and displays the location by the name of the place you clicked
+                    MyFragmentChanger cityChanger = (MyFragmentChanger) context;
+                    cityChanger.changeFragments(place);
                 });
 
-                holderView.setOnLongClickListener(new View.OnLongClickListener() {
-                    @Override
-                    public boolean onLongClick(View v) {
+                holderView.setOnLongClickListener((View v) -> {
 
 
                         //creating a popup menu
@@ -178,7 +174,9 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter <MyRecyclerAdapter.m
                                 switch (item.getItemId()) {
                                     case R.id.favorit_save:
                                         //
-                                        FavorietsTableDB favorietsTableDB = new FavorietsTableDB(place.getName(), place.getPhoto_reference());
+                                        FavorietsTableDB favorietsTableDB = new FavorietsTableDB(place.getLat(), place.getLng(),place.getIcon(),
+                                                place.getName(), place.isOpen(), place.getPhoto_reference(), place.getRating(), place.getTypes(),
+                                                place.getAddress());
                                         favorietsTableDB.save();
                                         break;
 
@@ -197,7 +195,6 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter <MyRecyclerAdapter.m
                         //displaying the popup
                         popup.show();
                         return true;
-                    }
                 });
             }
 
