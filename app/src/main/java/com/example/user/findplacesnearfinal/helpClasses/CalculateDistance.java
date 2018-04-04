@@ -1,4 +1,4 @@
-package com.example.user.findplacesnearfinal;
+package com.example.user.findplacesnearfinal.helpClasses;
 
 import android.location.Location;
 import android.location.LocationManager;
@@ -17,6 +17,7 @@ public class CalculateDistance {
     public CalculateDistance() {
     }
 
+    //calculate the distance in KM between 2 points
     public double getDistance(LatLng startP, LatLng endP){
 
             double distance = 0;

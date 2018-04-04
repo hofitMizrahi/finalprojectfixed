@@ -8,7 +8,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.user.findplacesnearfinal.DataBase.FavorietsTableDB;
+import com.example.user.findplacesnearfinal.SugarDataBase.FavorietsDB;
 import com.example.user.findplacesnearfinal.R;
 import com.squareup.picasso.Picasso;
 
@@ -17,11 +17,11 @@ import java.util.ArrayList;
 public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.myViewHolder> {
 
     Context context;
-    ArrayList<FavorietsTableDB> allFavoriets;
+    ArrayList<FavorietsDB> allFavoriets;
 
     public FavoritesAdapter(Context context) {
         this.context = context;
-        allFavoriets = (ArrayList<FavorietsTableDB>) FavorietsTableDB.listAll(FavorietsTableDB.class);
+        allFavoriets = (ArrayList<FavorietsDB>) FavorietsDB.listAll(FavorietsDB.class);
 
     }
 
@@ -36,7 +36,7 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.myVi
     @Override
     public void onBindViewHolder(myViewHolder holder, int position) {
 
-        FavorietsTableDB myFavorites = allFavoriets.get(position);
+        FavorietsDB myFavorites = allFavoriets.get(position);
         holder.bindMyCityData(myFavorites);
     }
 
@@ -57,7 +57,7 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.myVi
         }
 
 
-        public void bindMyCityData(FavorietsTableDB favorites) {
+        public void bindMyCityData(FavorietsDB favorites) {
 
             ImageView favoriteImage = v.findViewById(R.id.favorite_IV);
 

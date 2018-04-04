@@ -11,11 +11,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.user.findplacesnearfinal.DataBase.PlacesTable;
+import com.example.user.findplacesnearfinal.Activity.MainActivity;
+import com.example.user.findplacesnearfinal.Model.Location;
+import com.example.user.findplacesnearfinal.SugarDataBase.PlacesDB;
 import com.example.user.findplacesnearfinal.R;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -25,27 +26,28 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import com.squareup.picasso.Picasso;
-
-import java.util.ArrayList;
+import static com.example.user.findplacesnearfinal.Fragments.SearchFragment.lastKnownLocation;
 
 /**
- * A simple {@link Fragment} subclass.
+ * information fragment after user click on recyclerView item
  */
 public class InfoFragment extends Fragment {
 
     View v;
-
-    PlacesTable place;
+    PlacesDB place;
+    GoogleMap myGoogleMap;
+    android.location.Location myLocation;
 
     public InfoFragment(){
 
     }
 
     @SuppressLint("ValidFragment")
-    public InfoFragment(PlacesTable place) {
+    public InfoFragment(PlacesDB place) {
         // Required empty public constructor
 
         this.place = place;
+        this.myLocation = lastKnownLocation;
     }
 
     @Override
@@ -55,9 +57,25 @@ public class InfoFragment extends Fragment {
 
         setMap();
 
+//--------------------------------------------------------------------------------------------------
+
+        //set title
         TextView name_info = v.findViewById(R.id.name_info);
         name_info.setText(place.getName());
 
+//--------------------------------------------------------------------------------------------------
+
+        // user click return to go back the main fragment
+        ImageView returnIV = v.findViewById(R.id.returm_info_IV);
+        returnIV.setOnClickListener((View view) -> {
+
+           Intent intent = new Intent(getActivity() ,MainActivity.class);
+           startActivity(intent);
+        });
+
+//--------------------------------------------------------------------------------------------------
+
+        // click on car image --> go to waze and start navigation
         ImageView carImage = v.findViewById(R.id.carImage_info);
         carImage.setOnClickListener((View view) -> {
             Toast.makeText(getActivity(), "car click", Toast.LENGTH_SHORT).show();
@@ -77,8 +95,23 @@ public class InfoFragment extends Fragment {
             }
         });
 
-        //image resource
-        ImageView imageView = v.findViewById(R.id.image_info);
+//--------------------------------------------------------------------------------------------------
+
+        ImageView walkModeToGoogle = v.findViewById(R.id.walk_info_IV);
+        walkModeToGoogle.setOnClickListener((View view) -> {
+
+            String uri = "http://maps.google.com/maps?saddr=" + myLocation.getLatitude() + "," + myLocation.getLongitude() + "&daddr="
+                     + place.getLat() + ","+ place.getLng() + "&mode=walking";
+
+            Intent intent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse(uri));
+            intent.setPackage("com.google.android.apps.maps");
+            startActivity(intent);
+        });
+
+//--------------------------------------------------------------------------------------------------
+
+        //set image resource for the place
+        ImageView imageRes = v.findViewById(R.id.image_info);
 
         //check if there is any image resource in the Photo list array
         if (!place.getPhoto_reference().equals("")) {
@@ -93,14 +126,12 @@ public class InfoFragment extends Fragment {
                     .load(url)
                     .resize(90, 90)
                     .centerCrop()
-                    .into(imageView);
+                    .into(imageRes);
         }
 
-        imageView.setOnClickListener((View view) ->{
+//--------------------------------------------------------------------------------------------------
 
-            //
-        });
-
+        //set address
         TextView addressInfo = v.findViewById(R.id.address_info);
         addressInfo.setText(place.getAddress());
 
@@ -115,12 +146,16 @@ public class InfoFragment extends Fragment {
         return v;
     }
 
+//--------------------------------------------------------------------------------------------------
+
     private void setMap() {
 
         MapFragment mapFragment = new MapFragment();
         mapFragment.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(GoogleMap googleMap) {
+                myGoogleMap = googleMap;
+
                 googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
 
                 LatLng latLng = new LatLng(place.getLat(),place.getLng());

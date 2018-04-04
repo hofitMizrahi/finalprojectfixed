@@ -15,14 +15,6 @@
         android:background="@drawable/drinktoapp"
         android:orientation="vertical">
 
-        <!--<Button-->
-        <!--android:layout_width="33dp"-->
-        <!--android:layout_height="31dp"-->
-        <!--android:layout_marginLeft="7dp"-->
-        <!--android:layout_marginTop="27dp"-->
-        <!--android:background="@drawable/location_green" />-->
-
-
         <RelativeLayout
             android:id="@+id/linearLayout"
             android:layout_width="match_parent"
@@ -41,8 +33,9 @@
                 <Button
                     android:id="@+id/locationChangeBtn"
                     android:layout_width="38dp"
+                    android:paddingLeft="4dp"
                     android:layout_height="33dp"
-                    android:layout_alignParentBottom="true"
+                    android:layout_centerInParent="true"
                     android:layout_centerHorizontal="true"
                     android:background="@drawable/not_location" />
             </RelativeLayout>
@@ -58,13 +51,14 @@
                 <EditText
                     android:id="@+id/searchtext_ET"
                     android:layout_width="200dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="8dp"
-                    android:gravity="bottom"
+                    android:layout_height="40dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_weight="1"
                     android:backgroundTint="@color/Transparent"
+                    android:gravity="center|left"
                     android:hint="enter place.."
                     android:lines="1"
-                    android:textSize="20dp" />
+                    android:textSize="18dp" />
 
                 <ImageView
                     android:id="@+id/search_image"
@@ -73,7 +67,6 @@
                     android:layout_marginLeft="2dp"
                     android:layout_marginRight="10dp"
                     android:layout_marginTop="3dp"
-                    android:layout_weight="1"
                     android:background="@drawable/glass"
                     android:paddingRight="8dp"
                     android:paddingTop="10dp" />

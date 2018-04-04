@@ -15,7 +15,6 @@ import android.app.Fragment;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
@@ -26,49 +25,41 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
 import com.example.user.findplacesnearfinal.Adapters.MyRecyclerAdapter;
+import com.example.user.findplacesnearfinal.helpClasses.CallToRetrofit;
 import com.example.user.findplacesnearfinal.Helper.SwipeController;
-import com.example.user.findplacesnearfinal.Model.Place;
-import com.example.user.findplacesnearfinal.Model.allResults;
 import com.example.user.findplacesnearfinal.R;
-import com.example.user.findplacesnearfinal.Service.GitHubService;
-import com.example.user.findplacesnearfinal.DataBase.PlacesTable;
-import com.example.user.findplacesnearfinal.remote.RetrofitClient;
+import com.example.user.findplacesnearfinal.SugarDataBase.PlacesDB;
 import com.google.android.gms.maps.model.LatLng;
 import com.orm.SugarContext;
 
 import java.util.ArrayList;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-
 import static android.content.Context.LOCATION_SERVICE;
 
 public class SearchFragment extends Fragment implements LocationListener {
 
-    private String API_KEY = "AIzaSyBwpg6a0MQuMKzVTHlwzCmhTksktUCqHf8";
-    private final int REQUEST_CODE = 9;
+    private final int PERMISSION_REQUEST_CODE = 9;
 
     private LocationManager locationManager;
-    Location lastKnownLocation;
-    private String lastKnowLoc;
-    public static boolean searchWithLocationAPI = false;
+    public static Location lastKnownLocation;
+    private String lastKnowStringLoc;
+    private boolean searchWithLocationAPI = false;
 
     View myView;
     RecyclerView recyclerView;
-    EditText searchTXT;
     Button locationBtn;
+    EditText searchTXT;
     SeekBar seekBar;
-    int myProgress;
+    int progressBarValue;
 
     private Boolean prefUseKm;
 
-    ArrayList<PlacesTable> allPlaces;
+    private ArrayList<PlacesDB> allPlaces;
+    private MyRecyclerAdapter adapter;
 
     // Required empty public constructor
     public SearchFragment() {
@@ -80,6 +71,9 @@ public class SearchFragment extends Fragment implements LocationListener {
 
         //inflate the layout
         myView = inflater.inflate(R.layout.search_fragment, container, false);
+
+        SugarContext.init(getActivity());
+
 
         //initialization the LocationManager
         locationManager = (LocationManager) getActivity().getSystemService(LOCATION_SERVICE);
@@ -99,7 +93,7 @@ public class SearchFragment extends Fragment implements LocationListener {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 
                 Log.i("Progress", String.valueOf(progress));
-                myProgress = progress;
+                progressBarValue = progress;
             }
 
             @Override
@@ -136,6 +130,7 @@ public class SearchFragment extends Fragment implements LocationListener {
             checkLocationPermission();
         }
 
+//--------------------------------------------------------------------------------------------------------
         setRecyclerFromDB();
 //--------------------------------------------------------------------------------------------------------
 
@@ -191,133 +186,21 @@ public class SearchFragment extends Fragment implements LocationListener {
             public void onClick(View v) {
 
                 // take the text that the user enter to EditText
-                String textEnteredByTheUser = getUserText();
+                String userText = getUserText();
 
-                doRetrofitCallAndUpdateDatabase(textEnteredByTheUser);
-                setRecyclerFromDB();
 
+                //call retrofit and update recyclerView
+                CallToRetrofit retrofitCall = new CallToRetrofit(getActivity(), userText, progressBarValue,
+                                                                lastKnowStringLoc, searchWithLocationAPI,
+                                                                lastKnownLocation, recyclerView, adapter);
+                retrofitCall.startCallRetrofitApi();
             }
 
         });
 
-        //ok in key bord
-        /* yourEditText.setOnEditorActionListener(
-        new EditText.OnEditorActionListener() {
-    @Override
-    public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-          if (actionId == EditorInfo.IME_ACTION_DONE) {
-             your code here
-    }
-}
-});*/
-
         return myView;
     }
 
-    private void doRetrofitCallAndUpdateDatabase(String textEnteredByTheUser) {
-
-        GitHubService apiService = RetrofitClient.getClient().create(GitHubService.class);
-        Call<allResults> repos = null;
-
-        //if user don't write nothing
-        if (textEnteredByTheUser.equals("")) {
-
-            Toast.makeText(getActivity(), "please enter something", Toast.LENGTH_SHORT).show();
-
-        } else {
-
-            //if user wont to search by text and don't wont to use GPS!!
-            if (!searchWithLocationAPI) {
-
-                Toast.makeText(getActivity(), "text", Toast.LENGTH_SHORT).show();
-                repos = apiService.getTextSearchResults(textEnteredByTheUser, API_KEY);
-
-            } else {
-
-                Toast.makeText(getActivity(), "nearBy", Toast.LENGTH_SHORT).show();
-                String radius = String.valueOf(myProgress * 1000);
-
-                repos = apiService.getNearbyResults(lastKnowLoc, radius, textEnteredByTheUser, API_KEY);
-            }
-
-            repos.enqueue(new Callback<allResults>() {
-
-                @Override
-                public void onResponse(Call<allResults> call, Response<allResults> response) {
-
-                    Toast.makeText(getActivity(), "its works(:", Toast.LENGTH_SHORT).show();
-                    allResults results = response.body();
-
-                    if (results.getResults().isEmpty()) {
-
-                        //if i have zero results
-                        Toast.makeText(getActivity(), "No Results - no data in the array", Toast.LENGTH_SHORT).show();
-
-                        //i have results in the array
-                    } else {
-
-                        PlacesTable.deleteAll(PlacesTable.class);
-
-                        for (int i = 0; i < results.getResults().size(); i++) {
-
-                            Place place = results.getResults().get(i);
-                            String photo = "";
-
-                            if (place.getPhotos() == null) {
-                                photo = "";
-                            } else {
-
-                                photo = place.getPhotos().get(0).getPhoto_reference();
-                            }
-
-                            String isOpen = null;
-
-                            if (place.getOpening_hours() == null) {
-
-                                isOpen = null;
-
-                            } else if (place.getOpening_hours() != null && place.getOpening_hours().isOpen_now() == true) {
-
-                                isOpen = "true";
-                            } else {
-                                isOpen = "false";
-                            }
-
-                            String placeAddress = "";
-                            if (place.getFormatted_address() != null) {
-
-                                placeAddress = place.getFormatted_address();
-                            } else if (place.getVicinity() != null) {
-
-                                placeAddress = place.getVicinity();
-                            }
-
-                            //@TODO check if the item is alredy on the favorites
-
-                            PlacesTable sugarPlaceTable = new PlacesTable(place.getGeometry().getLocation().getLat(),
-                                    place.getGeometry().getLocation().getLng(),
-                                    place.getIcon(), place.getName(), isOpen,
-                                    photo, place.getRating(), place.getTypes(),
-                                    placeAddress, false
-                            );
-
-                            sugarPlaceTable.save();
-                        }
-                    }
-
-                    allPlaces = (ArrayList<PlacesTable>) PlacesTable.listAll(PlacesTable.class);
-                }
-
-                @Override
-                public void onFailure(Call<allResults> call, Throwable t) {
-
-                    Toast.makeText(getActivity(), "fail call", Toast.LENGTH_SHORT).show();
-
-                }
-
-            });
-        }
-    }
 //--------------------------------------------------------------------------------------------------------------------
 
     /**
@@ -334,13 +217,13 @@ public class SearchFragment extends Fragment implements LocationListener {
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         //setting txt adapter
-        RecyclerView.Adapter Adapter = new MyRecyclerAdapter(getActivity(), latLng);
-        recyclerView.setAdapter(Adapter);
+        adapter = new MyRecyclerAdapter(getActivity(), latLng);
+        recyclerView.setAdapter(adapter);
 
         SwipeController swipeController = new SwipeController();
         ItemTouchHelper itemTouchhelper = new ItemTouchHelper(swipeController);
         itemTouchhelper.attachToRecyclerView(recyclerView);
-        Adapter.notifyDataSetChanged(); //refresh
+        adapter.notifyDataSetChanged(); //refresh
     }
 
 //------------------------------------------------------------------------------------------------------------------
@@ -375,6 +258,8 @@ public class SearchFragment extends Fragment implements LocationListener {
             seekBar.setVisibility(View.INVISIBLE);
             searchWithLocationAPI = false;
         }
+
+        setRecyclerFromDB();
     }
 
     @Override
@@ -400,7 +285,7 @@ public class SearchFragment extends Fragment implements LocationListener {
         if (location == null) {
 
         } else {
-            lastKnowLoc = location.getLatitude() + "," + location.getLongitude();
+            lastKnowStringLoc = location.getLatitude() + "," + location.getLongitude();
             Log.i("LOC", "lat: " + location.getLatitude() + " lon:" + location.getLongitude());
         }
     }
@@ -451,7 +336,7 @@ public class SearchFragment extends Fragment implements LocationListener {
 
         if(lastKnownLocation != null){
             Toast.makeText(getActivity(), "lat: " + lastKnownLocation.getLatitude() + " lon:" + lastKnownLocation.getLongitude(), Toast.LENGTH_SHORT).show();
-            lastKnowLoc = lastKnownLocation.getLatitude() + "," + lastKnownLocation.getLongitude();
+            lastKnowStringLoc = lastKnownLocation.getLatitude() + "," + lastKnownLocation.getLongitude();
 
         }
 
@@ -474,7 +359,7 @@ public class SearchFragment extends Fragment implements LocationListener {
             // No explanation needed, we can request the permission.
             ActivityCompat.requestPermissions(getActivity(),
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    REQUEST_CODE);
+                    PERMISSION_REQUEST_CODE);
 
             return false;
 
@@ -491,7 +376,7 @@ public class SearchFragment extends Fragment implements LocationListener {
 
         switch (requestCode) {
 
-            case REQUEST_CODE: {
+            case PERMISSION_REQUEST_CODE: {
 
                 // if request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {

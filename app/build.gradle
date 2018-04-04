@@ -4,7 +4,7 @@ android {
     compileSdkVersion 26
     defaultConfig {
         applicationId "com.example.user.findplacesnearfinal"
-        minSdkVersion 16
+        minSdkVersion 15
         targetSdkVersion 26
         multiDexEnabled true
         versionCode 1
@@ -68,5 +68,8 @@ dependencies {
 
     //SlidePanel
     compile 'com.sothree.slidinguppanel:library:3.4.0'
+
+    //Direction library
+    compile 'com.akexorcist:googledirectionlibrary:1.1.1'
 
 }

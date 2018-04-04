@@ -13,13 +13,14 @@ import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import com.example.user.findplacesnearfinal.SugarDataBase.FavorietsDB;
 import com.example.user.findplacesnearfinal.Fragments.FavoritesFragment;
 import com.example.user.findplacesnearfinal.Fragments.InfoFragment;
 import com.example.user.findplacesnearfinal.Fragments.SearchFragment;
-import com.example.user.findplacesnearfinal.Fragments.MyPerfsFragment;
+import com.example.user.findplacesnearfinal.Fragments.MyPrefsFragment;
 import com.example.user.findplacesnearfinal.R;
 import com.example.user.findplacesnearfinal.Service.MyFragmentChanger;
-import com.example.user.findplacesnearfinal.DataBase.PlacesTable;
+import com.example.user.findplacesnearfinal.SugarDataBase.PlacesDB;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
@@ -44,8 +45,14 @@ public class MainActivity extends AppCompatActivity implements MyFragmentChanger
         //refresh sugar database
         SugarContext.init(this);
 
+        //connected to Broadcast to listen the mobile Power
+        connectedOrDisConnectedPowerChanging();
+
         //settings for UI
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+
+        //set up the custom tool bar
+        setToolBar();
 
         //initialize the fragment
         mapFragment = new MapFragment();
@@ -53,12 +60,6 @@ public class MainActivity extends AppCompatActivity implements MyFragmentChanger
 
         //set up the screen
         screenPositionOrder();
-
-        //set up the custom tool bar
-        setToolBar();
-
-        //connected to Broadcast to listen the mobile Power
-        connectedOrDisConnectedPowerChanging();
 
     }
 
@@ -155,7 +156,7 @@ public class MainActivity extends AppCompatActivity implements MyFragmentChanger
 
             case R.id.favorite_popup:
 
-                changeToFavorietsFragment();
+                changeToFavoritesFragment();
                 break;
 
             case R.id.closeApp:
@@ -165,7 +166,10 @@ public class MainActivity extends AppCompatActivity implements MyFragmentChanger
 
             case R.id.showSettings:
                 getFragmentManager().beginTransaction().addToBackStack("replacing")
-                        .replace(R.id.main_portrait_layout, new MyPerfsFragment()).commit();
+                        .replace(R.id.main_portrait_layout, new MyPrefsFragment()).commit();
+                break;
+            case R.id.delete_favorites:
+                FavorietsDB.deleteAll(FavorietsDB.class);
                 break;
         }
         return true;
@@ -180,12 +184,8 @@ public class MainActivity extends AppCompatActivity implements MyFragmentChanger
 
 //--------------------------------------------------------------------------------------------------------------
 
-    /**
-     * @param place - Place Object to send the map Fragment
-     */
-
     @Override
-    public void changeFragments(final PlacesTable place) {
+    public void changeFragments(final PlacesDB place) {
 
         if(isPortrait()) {
             InfoFragment fragmentB = new InfoFragment(place);
@@ -210,7 +210,7 @@ public class MainActivity extends AppCompatActivity implements MyFragmentChanger
     }
 
     @Override
-    public void changeToFavorietsFragment() {
+    public void changeToFavoritesFragment() {
 
         getFragmentManager().beginTransaction().addToBackStack("replacing").replace(R.id.main_portrait_layout, favoritesFragment).commit();
 
@@ -222,6 +222,5 @@ public class MainActivity extends AppCompatActivity implements MyFragmentChanger
 
         unregisterReceiver(connectedBroadcast);
         unregisterReceiver(disconnectedBroadcast);
-
     }
 }

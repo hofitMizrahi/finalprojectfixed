@@ -1,12 +1,8 @@
-package com.example.user.findplacesnearfinal.DataBase;
+package com.example.user.findplacesnearfinal.SugarDataBase;
 
 import com.orm.SugarRecord;
 
-/**
- * Created by user on 16/03/2018.
- */
-
-public class FavorietsTableDB extends SugarRecord {
+public class PlacesDB extends SugarRecord{
 
     private double lat;
     private double lng;
@@ -17,11 +13,12 @@ public class FavorietsTableDB extends SugarRecord {
     private double rating;
     private String[] types;
     private String address;
+    private boolean isFavoriet;
 
-    public FavorietsTableDB() {
+    public PlacesDB() {
     }
 
-    public FavorietsTableDB(double lat, double lng, String icon, String name, String isOpen, String photo_reference, double rating, String[] types, String address) {
+    public PlacesDB(double lat, double lng, String icon, String name, String isOpen, String photo_reference, double rating, String[] types, String address, boolean isFavoriet) {
         this.lat = lat;
         this.lng = lng;
         this.icon = icon;
@@ -31,6 +28,7 @@ public class FavorietsTableDB extends SugarRecord {
         this.rating = rating;
         this.types = types;
         this.address = address;
+        this.isFavoriet = isFavoriet;
     }
 
     public double getLat() {
@@ -67,5 +65,13 @@ public class FavorietsTableDB extends SugarRecord {
 
     public String getAddress() {
         return address;
+    }
+
+    public boolean isFavoriet() {
+        return isFavoriet;
+    }
+
+    public String isOpen() {
+        return isOpen;
     }
 }

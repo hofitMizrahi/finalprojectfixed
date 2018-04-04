@@ -4,11 +4,12 @@
 
     <item
     android:id="@+id/showSettings"
-    android:title="Settings"/>
+    android:title="@string/settings"/>
 
     <item
-        android:title="Delete favorits"
-        android:id="@+id/delete_popup"/>
+
+        android:title="@string/deleteFavorites"
+        android:id="@+id/delete_favorites"/>
 
     <item
         android:title="Exit"
@@ -16,9 +17,9 @@
 
 
     <item
-        android:title="favorits"
-        android:id="@+id/favorite_popup"
-        android:icon="@drawable/favorits_icon"
-        app:showAsAction="always"/>
+    android:title="favorits"
+    android:id="@+id/favorite_popup"
+    android:icon="@drawable/favorits_icon"
+    app:showAsAction="always"/>
 
 </menu>

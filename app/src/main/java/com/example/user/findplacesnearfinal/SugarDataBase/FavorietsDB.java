@@ -1,14 +1,12 @@
-package com.example.user.findplacesnearfinal.DataBase;
+package com.example.user.findplacesnearfinal.SugarDataBase;
 
-import com.example.user.findplacesnearfinal.Model.Geometry;
-import com.example.user.findplacesnearfinal.Model.Location;
-import com.example.user.findplacesnearfinal.Model.OpenHours;
-import com.example.user.findplacesnearfinal.Model.Photo;
 import com.orm.SugarRecord;
 
-import java.util.List;
+/**
+ * Created by user on 16/03/2018.
+ */
 
-public class PlacesTable extends SugarRecord{
+public class FavorietsDB extends SugarRecord {
 
     private double lat;
     private double lng;
@@ -19,12 +17,11 @@ public class PlacesTable extends SugarRecord{
     private double rating;
     private String[] types;
     private String address;
-    private boolean isFavoriet;
 
-    public PlacesTable() {
+    public FavorietsDB() {
     }
 
-    public PlacesTable(double lat, double lng, String icon, String name, String isOpen, String photo_reference, double rating, String[] types, String address, boolean isFavoriet) {
+    public FavorietsDB(double lat, double lng, String icon, String name, String isOpen, String photo_reference, double rating, String[] types, String address) {
         this.lat = lat;
         this.lng = lng;
         this.icon = icon;
@@ -34,7 +31,6 @@ public class PlacesTable extends SugarRecord{
         this.rating = rating;
         this.types = types;
         this.address = address;
-        this.isFavoriet = isFavoriet;
     }
 
     public double getLat() {
@@ -71,13 +67,5 @@ public class PlacesTable extends SugarRecord{
 
     public String getAddress() {
         return address;
-    }
-
-    public boolean isFavoriet() {
-        return isFavoriet;
-    }
-
-    public String isOpen() {
-        return isOpen;
     }
 }

@@ -3,6 +3,8 @@ package com.example.user.findplacesnearfinal.Adapters;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -12,11 +14,11 @@ import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
-import com.example.user.findplacesnearfinal.CalculateDistance;
-import com.example.user.findplacesnearfinal.DataBase.FavorietsTableDB;
+import com.example.user.findplacesnearfinal.helpClasses.CalculateDistance;
+import com.example.user.findplacesnearfinal.SugarDataBase.FavorietsDB;
 import com.example.user.findplacesnearfinal.R;
 import com.example.user.findplacesnearfinal.Service.MyFragmentChanger;
-import com.example.user.findplacesnearfinal.DataBase.PlacesTable;
+import com.example.user.findplacesnearfinal.SugarDataBase.PlacesDB;
 import com.google.android.gms.maps.model.LatLng;
 import com.squareup.picasso.Picasso;
 
@@ -24,13 +26,13 @@ import java.util.ArrayList;
 
 public class MyRecyclerAdapter extends RecyclerView.Adapter <MyRecyclerAdapter.myViewHolder> {
 
-    ArrayList<PlacesTable> placeArrayList;
+    ArrayList<PlacesDB> placeArrayList;
     Context context;
     LatLng latLng;
 
     public MyRecyclerAdapter(Context context, LatLng latLng) {
 
-        placeArrayList = (ArrayList<PlacesTable>) PlacesTable.listAll(PlacesTable.class);
+        placeArrayList = (ArrayList<PlacesDB>) PlacesDB.listAll(PlacesDB.class);
         this.context = context;
         this.latLng = latLng;
     }
@@ -46,7 +48,7 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter <MyRecyclerAdapter.m
     @Override
     public void onBindViewHolder(myViewHolder singleItem, int position) {
 
-        PlacesTable place = placeArrayList.get(position);
+        PlacesDB place = placeArrayList.get(position);
         singleItem.bindMyCityData(place);
     }
 
@@ -66,7 +68,7 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter <MyRecyclerAdapter.m
         }
 
         @SuppressLint("ResourceType")
-        public void bindMyCityData(final PlacesTable place) {
+        public void bindMyCityData(final PlacesDB place) {
 
             // title
             TextView title = holderView.findViewById(R.id.title_TV);
@@ -142,13 +144,23 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter <MyRecyclerAdapter.m
                 TextView meters = holderView.findViewById(R.id.KM_TV);
 
                 LatLng endP = new LatLng(place.getLat(), place.getLng());
-
                 CalculateDistance calculateDistance = new CalculateDistance();
                 double distance = calculateDistance.getDistance(latLng, endP);
 
-                String allmeters = String.valueOf(round(distance, 1));
+                String myDistance = String.valueOf(round(distance, 1));
 
-                meters.setText(allmeters);
+            SharedPreferences sharedPreferences= PreferenceManager.getDefaultSharedPreferences(context);
+            //get value from SharedPrefs
+            String showInList = sharedPreferences.getString("list_preference", "list");
+
+            if(showInList.equals("Miles")){
+
+                //miles calculator
+                distance = distance * 0.621371;
+                myDistance = String.valueOf(round(distance, 1));
+            }
+
+                meters.setText(myDistance);
 
 //-------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -174,7 +186,7 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter <MyRecyclerAdapter.m
                                 switch (item.getItemId()) {
                                     case R.id.favorit_save:
                                         //
-                                        FavorietsTableDB favorietsTableDB = new FavorietsTableDB(place.getLat(), place.getLng(),place.getIcon(),
+                                        FavorietsDB favorietsTableDB = new FavorietsDB(place.getLat(), place.getLng(),place.getIcon(),
                                                 place.getName(), place.isOpen(), place.getPhoto_reference(), place.getRating(), place.getTypes(),
                                                 place.getAddress());
                                         favorietsTableDB.save();
