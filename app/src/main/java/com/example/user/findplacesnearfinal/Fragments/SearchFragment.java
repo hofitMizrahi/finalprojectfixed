@@ -26,6 +26,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.user.findplacesnearfinal.Adapters.MyRecyclerAdapter;
@@ -55,8 +56,9 @@ public class SearchFragment extends Fragment implements LocationListener {
     EditText searchTXT;
     SeekBar seekBar;
     int progressBarValue;
+    TextView seekBarProgressText;
 
-    private Boolean prefUseKm;
+    private Boolean isPrefUseKm;
 
     private ArrayList<PlacesDB> allPlaces;
     private MyRecyclerAdapter adapter;
@@ -65,6 +67,7 @@ public class SearchFragment extends Fragment implements LocationListener {
     public SearchFragment() {
     }
 
+    @SuppressLint("NewApi")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -74,28 +77,26 @@ public class SearchFragment extends Fragment implements LocationListener {
 
         SugarContext.init(getActivity());
 
-
         //initialization the LocationManager
         locationManager = (LocationManager) getActivity().getSystemService(LOCATION_SERVICE);
 
         //get the user miles or Km pref
-        getKmOrMilesFromPrefrences();
+        getKmOrMilesFromPreference();
 
         //initialization the RecyclerView, the location button, seekBar
         recyclerView = myView.findViewById(R.id.myList_RV);
         locationBtn = myView.findViewById(R.id.locationChangeBtn);
-
-
         seekBar = myView.findViewById(R.id.mySeekBar_id);
+        seekBarProgressText = myView.findViewById(R.id.progress_forseekbar_TV);
 
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 
                 Log.i("Progress", String.valueOf(progress));
-                progressBarValue = progress;
+                progressBarValue = progress+5; // 5 - 30
+                seekBarProgressText.setText(String.valueOf(progressBarValue));
             }
-
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
 
@@ -121,9 +122,10 @@ public class SearchFragment extends Fragment implements LocationListener {
 
             getLocation();
             seekBar.setVisibility(View.VISIBLE);
+            seekBarProgressText.setVisibility(View.VISIBLE);
             searchWithLocationAPI = true;
             locationBtn.setBackgroundResource(R.drawable.location_green);
-            setRecyclerFromDB();
+
         } else {
 
             isGpsEnable();
@@ -131,7 +133,18 @@ public class SearchFragment extends Fragment implements LocationListener {
         }
 
 //--------------------------------------------------------------------------------------------------------
+
+        try{
+
+            getLocation();
+
+        }catch (Exception ee){
+
+            ee.printStackTrace();
+        }
+
         setRecyclerFromDB();
+
 //--------------------------------------------------------------------------------------------------------
 
         /**
@@ -148,6 +161,8 @@ public class SearchFragment extends Fragment implements LocationListener {
 
                     locationBtn.setBackgroundResource(R.drawable.not_location);
                     seekBar.setVisibility(View.INVISIBLE);
+                    seekBarProgressText.setVisibility(View.INVISIBLE);
+
                     searchWithLocationAPI = false;
 
                     // if user wont to set the Gps btn to ON - gps need to be Enable and also the permission check are true
@@ -163,6 +178,7 @@ public class SearchFragment extends Fragment implements LocationListener {
                     getLocation();
                     locationBtn.setBackgroundResource(R.drawable.location_green);
                     seekBar.setVisibility(View.VISIBLE);
+                    seekBarProgressText.setVisibility(View.VISIBLE);
                     searchWithLocationAPI = true;
 
                 } else {
@@ -187,13 +203,18 @@ public class SearchFragment extends Fragment implements LocationListener {
 
                 // take the text that the user enter to EditText
                 String userText = getUserText();
+                if(lastKnowStringLoc != null){
 
+                    //call retrofit and update recyclerView
+                    CallToRetrofit retrofitCall = new CallToRetrofit(getActivity(), userText, progressBarValue,
+                            lastKnowStringLoc, searchWithLocationAPI,
+                            lastKnownLocation, recyclerView, adapter);
+                    retrofitCall.startCallRetrofitApi();
+                }else {
 
-                //call retrofit and update recyclerView
-                CallToRetrofit retrofitCall = new CallToRetrofit(getActivity(), userText, progressBarValue,
-                                                                lastKnowStringLoc, searchWithLocationAPI,
-                                                                lastKnownLocation, recyclerView, adapter);
-                retrofitCall.startCallRetrofitApi();
+                    checkLocationPermission();
+                    isGpsEnable();
+                }
             }
 
         });
@@ -201,7 +222,7 @@ public class SearchFragment extends Fragment implements LocationListener {
         return myView;
     }
 
-//--------------------------------------------------------------------------------------------------------------------
+//*******************************************************************************************************************
 
     /**
      * set the RecyclerView From DataBase
@@ -210,20 +231,26 @@ public class SearchFragment extends Fragment implements LocationListener {
 
         LatLng latLng = null;
 
-        if(lastKnownLocation != null){
+        if(lastKnownLocation != null) {
 
             latLng = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+
+        }else {
+
+            // no location found
+            latLng = new LatLng(0, 0);
+
         }
 
-        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        //setting txt adapter
-        adapter = new MyRecyclerAdapter(getActivity(), latLng);
-        recyclerView.setAdapter(adapter);
+            recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+            //setting adapter
+            adapter = new MyRecyclerAdapter(getActivity(), latLng);
+            recyclerView.setAdapter(adapter);
 
-        SwipeController swipeController = new SwipeController();
-        ItemTouchHelper itemTouchhelper = new ItemTouchHelper(swipeController);
-        itemTouchhelper.attachToRecyclerView(recyclerView);
-        adapter.notifyDataSetChanged(); //refresh
+            SwipeController swipeController = new SwipeController();
+            ItemTouchHelper itemTouchhelper = new ItemTouchHelper(swipeController);
+            itemTouchhelper.attachToRecyclerView(recyclerView);
+            adapter.notifyDataSetChanged(); //refresh
     }
 
 //------------------------------------------------------------------------------------------------------------------
@@ -278,7 +305,6 @@ public class SearchFragment extends Fragment implements LocationListener {
     /**
      * implement methods From LocationListener Object
      */
-
     @Override
     public void onLocationChanged(Location location) {
 
@@ -320,7 +346,7 @@ public class SearchFragment extends Fragment implements LocationListener {
 //---------------------------------------------------------------------------------------------------------------------------------
 
     /**
-     * get current location method
+     * get current location method from GPS || Network
      */
     @SuppressLint("MissingPermission")
     private void getLocation() {
@@ -329,7 +355,7 @@ public class SearchFragment extends Fragment implements LocationListener {
         lastKnownLocation = ((LocationManager) getActivity().getSystemService(LOCATION_SERVICE)).getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
         if (lastKnownLocation == null) {
-            Toast.makeText(getActivity(), "location not available :(", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), "location not available with gps:(", Toast.LENGTH_SHORT).show();
             lastKnownLocation = ((LocationManager) getActivity().getSystemService(LOCATION_SERVICE)).getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
 
         }
@@ -442,8 +468,8 @@ public class SearchFragment extends Fragment implements LocationListener {
 
 //---------------------------------------------------------------------------------------------------------------------
 
-    //get the value from shared Prefrences
-    public void  getKmOrMilesFromPrefrences(){
+    //get the value from shearPreference
+    public void  getKmOrMilesFromPreference(){
 
         SharedPreferences sharedPreferences= PreferenceManager.getDefaultSharedPreferences(getActivity());
         //get value from SharedPrefs
@@ -452,17 +478,17 @@ public class SearchFragment extends Fragment implements LocationListener {
         if(showInList.equals("Km")) {
 
             Toast.makeText(getActivity(), "Km", Toast.LENGTH_SHORT).show();
-            prefUseKm = true;
+            isPrefUseKm = true;
         }
         else if(showInList.equals("Miles"))
         {
             Toast.makeText(getActivity(), "miles", Toast.LENGTH_SHORT).show();
-            prefUseKm = false;
+            isPrefUseKm = false;
 
         }else {
 
             Toast.makeText(getActivity(), "force KM", Toast.LENGTH_SHORT).show();
-            prefUseKm = true;
+            isPrefUseKm = true;
         }
 
     }

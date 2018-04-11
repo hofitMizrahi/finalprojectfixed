@@ -1,6 +1,8 @@
 package com.example.user.findplacesnearfinal.Adapters;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -57,14 +59,14 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.myVi
         }
 
 
-        public void bindMyCityData(FavorietsDB favorites) {
+        public void bindMyCityData(FavorietsDB favorite) {
 
             ImageView favoriteImage = v.findViewById(R.id.favorite_IV);
 
             //check if there is any image resource in the Photo list array
-            if (!favorites.getPhoto_reference().equals("")) {
+            if (!favorite.getPhoto_reference().equals("")) {
 
-                String reference = favorites.getPhoto_reference();
+                String reference = favorite.getPhoto_reference();
 
                 String url = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=" + reference + "&key=AIzaSyBwpg6a0MQuMKzVTHlwzCmhTksktUCqHf8";
                 Picasso.with(context)
@@ -74,7 +76,40 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.myVi
                         .into(favoriteImage);
             }
 
-            ((TextView) v.findViewById(R.id.title_favorites_TV)).setText(favorites.getName());
+            ((TextView) v.findViewById(R.id.title_favorites_TV)).setText(favorite.getName());
+
+            v.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+
+                    AlertDialog myQuittingDialogBox =new AlertDialog.Builder(context)
+                            //set message, title, and icon
+                            .setTitle("Delete")
+                            .setMessage("Do you want to Delete")
+
+                            .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+
+                                public void onClick(DialogInterface dialog, int whichButton) {
+
+                                    favorite.delete();
+                                    dialog.dismiss();
+                                }
+
+                            })
+
+                            .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                    dialog.dismiss();
+
+                                }
+                            })
+                            .create();
+
+                    return true;
+                }
+            });
+
 
         }
     }

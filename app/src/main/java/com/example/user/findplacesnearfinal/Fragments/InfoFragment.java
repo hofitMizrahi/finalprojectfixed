@@ -131,6 +131,31 @@ public class InfoFragment extends Fragment {
 
 //--------------------------------------------------------------------------------------------------
 
+        ImageView shareImage = v.findViewById(R.id.share_info_IV);
+        shareImage.setOnClickListener((View view) -> {
+
+            String sendingText = "Want to go TO " + place.getName() + " with my?(:\n" + "If so, click the following link to use Waze: ";
+            String url = "https://waze.com/ul?q=66%20Acacia%20Avenue&ll= " + place.getLat() + "," + place.getLng() + "&navigate=yes";
+
+
+            Intent intent = new Intent(Intent.ACTION_SEND);
+            intent.setType("text/plain");
+            intent.putExtra(Intent.EXTRA_TEXT, url);
+            intent.putExtra(android.content.Intent.EXTRA_SUBJECT, sendingText);
+            startActivity(Intent.createChooser(intent, "Share"));
+
+        });
+
+        ImageView locationImage = v.findViewById(R.id.location_info_IV);
+        locationImage.setOnClickListener((View view) ->{
+
+            LatLng latLng = new LatLng(myLocation.getLatitude(),myLocation.getLongitude());
+            //update location and zoom 0 is the most far
+            myGoogleMap.addMarker(new MarkerOptions().position(latLng).title("my location"));
+            myGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng , 10));
+
+        });
+
         //set address
         TextView addressInfo = v.findViewById(R.id.address_info);
         addressInfo.setText(place.getAddress());
@@ -156,17 +181,19 @@ public class InfoFragment extends Fragment {
             public void onMapReady(GoogleMap googleMap) {
                 myGoogleMap = googleMap;
 
-                googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+                myGoogleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
 
                 LatLng latLng = new LatLng(place.getLat(),place.getLng());
                 //update location and zoom 0 is the most far
-                googleMap.addMarker(new MarkerOptions().position(latLng).title(place.getAddress()));
-                googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng , 10));
+                myGoogleMap.addMarker(new MarkerOptions().position(latLng).title(place.getAddress()));
+                myGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng , 10));
 
             }
         });
         getFragmentManager().beginTransaction().addToBackStack("replacing").replace(R.id.map_layout, mapFragment).commit();
     }
+
+
 
     @Override
     public void onPause() {

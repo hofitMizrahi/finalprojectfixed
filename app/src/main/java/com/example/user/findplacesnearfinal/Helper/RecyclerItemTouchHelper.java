@@ -1,7 +1,10 @@
 package com.example.user.findplacesnearfinal.Helper;
 
+import android.graphics.Canvas;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
+
+import static android.support.v7.widget.helper.ItemTouchHelper.ACTION_STATE_SWIPE;
 
 /**
  * Created by user on 23/02/2018.

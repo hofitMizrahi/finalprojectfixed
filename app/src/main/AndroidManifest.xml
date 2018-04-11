@@ -23,7 +23,8 @@
         <activity
             android:name=".Activity.MainActivity"
             android:configChanges="orientation|screenSize"
-            android:theme="@style/AppTheme">
+            android:theme="@style/AppTheme"
+            android:windowSoftInputMode="stateAlwaysHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

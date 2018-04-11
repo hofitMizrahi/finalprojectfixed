@@ -8,7 +8,6 @@ import android.location.Location;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
-import android.view.Gravity;
 import android.widget.Toast;
 
 import com.example.user.findplacesnearfinal.Adapters.MyRecyclerAdapter;
@@ -33,7 +32,7 @@ public class CallToRetrofit {
 
     private String API_KEY = "AIzaSyBwpg6a0MQuMKzVTHlwzCmhTksktUCqHf8";
 
-    allResults CallresultsArray;
+    allResults callResultsArray;
 
     Context context;
     String userTextToSearch;
@@ -81,6 +80,7 @@ public class CallToRetrofit {
         if (userTextToSearch.equals("")) {
 
             Toast.makeText(context, "oops... You forgot to enter something", Toast.LENGTH_SHORT).show();
+            pd.dismiss();
             return false;
 
         }else {
@@ -108,9 +108,9 @@ public class CallToRetrofit {
                 public void onResponse(Call<allResults> call, Response<allResults> response) {
 
                     Toast.makeText(context, "call retrofit work's", Toast.LENGTH_SHORT).show();
-                    CallresultsArray = response.body();
+                    callResultsArray = response.body();
 
-                    if (CallresultsArray.getResults().isEmpty()) {
+                    if (callResultsArray.getResults().isEmpty()) {
 
                         //if i have zero results
                         Toast.makeText(context, "No Results - no data in the array", Toast.LENGTH_SHORT).show();
@@ -146,9 +146,9 @@ public class CallToRetrofit {
 
         PlacesDB.deleteAll(PlacesDB.class);
 
-        for (int i = 0; i < CallresultsArray.getResults().size(); i++) {
+        for (int i = 0; i < callResultsArray.getResults().size(); i++) {
 
-            Place place = CallresultsArray.getResults().get(i);
+            Place place = callResultsArray.getResults().get(i);
 
             String photo = "";
 

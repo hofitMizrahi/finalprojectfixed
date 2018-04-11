@@ -2,15 +2,7 @@ package com.example.user.findplacesnearfinal.helpClasses;
 
 import android.location.Location;
 import android.location.LocationManager;
-import android.util.Log;
-
 import com.google.android.gms.maps.model.LatLng;
-
-import java.text.DecimalFormat;
-
-/**
- * Created by user on 05/03/2018.
- */
 
 public class CalculateDistance {
 

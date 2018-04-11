@@ -1,13 +1,17 @@
 package com.example.user.findplacesnearfinal.Activity;
 
+import android.app.FragmentManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
@@ -29,10 +33,13 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.orm.SugarContext;
 
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity implements MyFragmentChanger{
 
-    MapFragment mapFragment;
     FavoritesFragment favoritesFragment;
+    SearchFragment searchFragment;
+    InfoFragment infoFragment;
 
     BroadcastReceiver connectedBroadcast;
     BroadcastReceiver disconnectedBroadcast;
@@ -43,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements MyFragmentChanger
         setContentView(R.layout.activity_main);
 
         //refresh sugar database
+        PlacesDB placesDB = new PlacesDB();
         SugarContext.init(this);
 
         //connected to Broadcast to listen the mobile Power
@@ -55,7 +63,6 @@ public class MainActivity extends AppCompatActivity implements MyFragmentChanger
         setToolBar();
 
         //initialize the fragment
-        mapFragment = new MapFragment();
         favoritesFragment = new FavoritesFragment();
 
         //set up the screen
@@ -63,6 +70,11 @@ public class MainActivity extends AppCompatActivity implements MyFragmentChanger
 
     }
 
+//*******************************************************************************************************
+
+    /**
+     * connected to broadcast to check the phone power on/off
+     */
     private void connectedOrDisConnectedPowerChanging() {
 
         connectedBroadcast = new BroadcastReceiver() {
@@ -94,23 +106,22 @@ public class MainActivity extends AppCompatActivity implements MyFragmentChanger
     /**
      * method that Initializing the layouts by the device orientation and if its mobile or tablet.
      */
-
     public void screenPositionOrder() {
+
+        searchFragment = new SearchFragment();
+        infoFragment = new InfoFragment();
 
         //if its mobile and portrait
         if (!isTablet(this) && isPortrait()) {
 
-            SearchFragment searchFragment = new SearchFragment();
-            getFragmentManager().beginTransaction().addToBackStack("replacing").replace(R.id.main_portrait_layout, searchFragment).commit();
+            getFragmentManager().beginTransaction().replace(R.id.main_portrait_layout, searchFragment).commit();
 
             //if its mobile and landscape OR if its tablet
         } else if (!isTablet(this) && !isPortrait() || isTablet(this)) {
 
-            SearchFragment searchFragment = new SearchFragment();
-            InfoFragment fragmentB = new InfoFragment();
-            getFragmentManager().beginTransaction().addToBackStack("replacing").replace(R.id.search_tablet_layout, searchFragment).commit();
-
-            getFragmentManager().beginTransaction().addToBackStack("replacing").replace(R.id.tablet_map_layout, fragmentB).commit();
+            getFragmentManager().beginTransaction().replace(R.id.search_tablet_layout, searchFragment).commit();
+            getFragmentManager().beginTransaction().replace(R.id.tablet_map_layout, infoFragment)
+                    .addToBackStack(null).commit();
         }
     }
 
@@ -165,8 +176,8 @@ public class MainActivity extends AppCompatActivity implements MyFragmentChanger
                 break;
 
             case R.id.showSettings:
-                getFragmentManager().beginTransaction().addToBackStack("replacing")
-                        .replace(R.id.main_portrait_layout, new MyPrefsFragment()).commit();
+                getFragmentManager().beginTransaction().replace(R.id.main_portrait_layout, new MyPrefsFragment())
+                                    .addToBackStack(null).commit();
                 break;
             case R.id.delete_favorites:
                 FavorietsDB.deleteAll(FavorietsDB.class);
@@ -184,43 +195,62 @@ public class MainActivity extends AppCompatActivity implements MyFragmentChanger
 
 //--------------------------------------------------------------------------------------------------------------
 
+    /**
+     *  the implementation of FragmentChanger interface
+     */
     @Override
     public void changeFragments(final PlacesDB place) {
 
+        infoFragment = new InfoFragment(place);
+
         if(isPortrait()) {
-            InfoFragment fragmentB = new InfoFragment(place);
-
-            mapFragment = new MapFragment();
-            getFragmentManager().beginTransaction().addToBackStack("replacing").replace(R.id.main_portrait_layout, fragmentB).commit();
+            getFragmentManager().beginTransaction().replace(R.id.main_portrait_layout, infoFragment)
+                    .addToBackStack(null).commit();
         }
-        mapFragment.getMapAsync(new OnMapReadyCallback() {
-            @Override
-            public void onMapReady(GoogleMap googleMap) {
-                googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-
-                LatLng latLng = new LatLng(place.getLat(),place.getLng());
-                //update location and zoom 0 is the most far
-                googleMap.addMarker(new MarkerOptions().position(latLng));
-                googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng , 10));
-
-                //googleMap.addMarker(new MarkerOptions().position(latLng).title(location.getPlace()));
-
-            }
-        });
     }
 
     @Override
     public void changeToFavoritesFragment() {
 
-        getFragmentManager().beginTransaction().addToBackStack("replacing").replace(R.id.main_portrait_layout, favoritesFragment).commit();
-
+        getFragmentManager().beginTransaction().replace(R.id.main_portrait_layout, favoritesFragment)
+                .addToBackStack(null).commit();
     }
 
+//--------------------------------------------------------------------------------------------------
+
+    /**
+     * Settings os the screen onStop() && onBackPressed()
+     */
     @Override
     protected void onStop() {
         super.onStop();
 
-        unregisterReceiver(connectedBroadcast);
-        unregisterReceiver(disconnectedBroadcast);
+        // close receiver
+        try {
+
+            unregisterReceiver(connectedBroadcast);
+            unregisterReceiver(disconnectedBroadcast);
+
+        }catch (Exception ee){
+
+            ee.printStackTrace();
+        }
+
+    }
+
+    @Override
+    public void onBackPressed(){
+
+        if(getFragmentManager().getBackStackEntryCount() == 1){
+            getFragmentManager().popBackStackImmediate();
+        }
+        else if(getFragmentManager().getBackStackEntryCount() == 2){
+
+            getFragmentManager().beginTransaction().replace(R.id.main_portrait_layout, searchFragment).commit();
+
+        }else {
+
+            finish();
+        }
     }
 }

@@ -20,6 +20,7 @@ import com.example.user.findplacesnearfinal.R;
 import com.example.user.findplacesnearfinal.Service.MyFragmentChanger;
 import com.example.user.findplacesnearfinal.SugarDataBase.PlacesDB;
 import com.google.android.gms.maps.model.LatLng;
+import com.orm.SugarContext;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -32,6 +33,7 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter <MyRecyclerAdapter.m
 
     public MyRecyclerAdapter(Context context, LatLng latLng) {
 
+        SugarContext.init(context);
         placeArrayList = (ArrayList<PlacesDB>) PlacesDB.listAll(PlacesDB.class);
         this.context = context;
         this.latLng = latLng;
@@ -194,11 +196,15 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter <MyRecyclerAdapter.m
 
                                     case R.id.share:
 
-                                        Intent sendIntent = new Intent();
-                                        sendIntent.setAction(Intent.ACTION_SEND);
-                                        sendIntent.putExtra(Intent.EXTRA_TEXT, "This is my text to send.");
-                                        sendIntent.setType("text/plain");
-                                        context.startActivity(sendIntent);
+                                        String sendingText = "Want to go here? " + place.getName() + "\n" + "If so, click the following link to use Waze: ";
+                                        String url = "https://waze.com/ul?q=66%20Acacia%20Avenue&ll= " + place.getLat() + "," + place.getLng() + "&navigate=yes";
+
+
+                                        Intent intent = new Intent(Intent.ACTION_SEND);
+                                        intent.setType("text/plain");
+                                        intent.putExtra(Intent.EXTRA_TEXT, url);
+                                        intent.putExtra(android.content.Intent.EXTRA_SUBJECT, sendingText);
+                                        context.startActivity(Intent.createChooser(intent, "Share"));
                                         break;
                                 }
                                 return false;
