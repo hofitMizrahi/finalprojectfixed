@@ -22,6 +22,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -39,6 +41,7 @@ import com.orm.SugarContext;
 
 import java.util.ArrayList;
 
+import static android.content.Context.INPUT_METHOD_SERVICE;
 import static android.content.Context.LOCATION_SERVICE;
 
 public class SearchFragment extends Fragment implements LocationListener {
@@ -201,6 +204,11 @@ public class SearchFragment extends Fragment implements LocationListener {
             @Override
             public void onClick(View v) {
 
+                if(getActivity().getCurrentFocus()!=null) {
+                    InputMethodManager inputMethodManager = (InputMethodManager) getActivity().getSystemService(INPUT_METHOD_SERVICE);
+                    inputMethodManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), 0);
+                }
+
                 // take the text that the user enter to EditText
                 String userText = getUserText();
                 if(lastKnowStringLoc != null){
@@ -283,10 +291,11 @@ public class SearchFragment extends Fragment implements LocationListener {
         } else {
             locationBtn.setBackgroundResource(R.drawable.not_location);
             seekBar.setVisibility(View.INVISIBLE);
+            seekBarProgressText.setVisibility(View.VISIBLE);
             searchWithLocationAPI = false;
         }
 
-        setRecyclerFromDB();
+//        setRecyclerFromDB();
     }
 
     @Override
@@ -331,6 +340,7 @@ public class SearchFragment extends Fragment implements LocationListener {
             getLocation();
             locationBtn.setBackgroundResource(R.drawable.location_green);
             seekBar.setVisibility(View.VISIBLE);
+            seekBarProgressText.setVisibility(View.VISIBLE);
             searchWithLocationAPI = true;
         }
     }
@@ -340,6 +350,7 @@ public class SearchFragment extends Fragment implements LocationListener {
 
         locationBtn.setBackgroundResource(R.drawable.not_location);
         seekBar.setVisibility(View.INVISIBLE);
+        seekBarProgressText.setVisibility(View.INVISIBLE);
         searchWithLocationAPI = false;
     }
 
@@ -434,13 +445,12 @@ public class SearchFragment extends Fragment implements LocationListener {
 
         // if i don't have gps
         if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            Toast.makeText(getActivity(), "GPS is disable!", Toast.LENGTH_LONG).show();
 
             // ask for gps and sent to it by intent
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
                     getActivity());
             alertDialogBuilder
-                    .setMessage("GPS is disabled in your device. Enable it?")
+                    .setMessage("GPS is disabled in your device. you need to enable it")
                     .setCancelable(false)
                     .setPositiveButton("Enable GPS",
                             new DialogInterface.OnClickListener() {
@@ -462,7 +472,6 @@ public class SearchFragment extends Fragment implements LocationListener {
             alert.show();
             return false;
         }
-        Toast.makeText(getActivity(), "GPS is Enable!", Toast.LENGTH_LONG).show();
         return true;
     }
 
@@ -477,17 +486,14 @@ public class SearchFragment extends Fragment implements LocationListener {
 
         if(showInList.equals("Km")) {
 
-            Toast.makeText(getActivity(), "Km", Toast.LENGTH_SHORT).show();
             isPrefUseKm = true;
         }
         else if(showInList.equals("Miles"))
         {
-            Toast.makeText(getActivity(), "miles", Toast.LENGTH_SHORT).show();
             isPrefUseKm = false;
 
         }else {
 
-            Toast.makeText(getActivity(), "force KM", Toast.LENGTH_SHORT).show();
             isPrefUseKm = true;
         }
 

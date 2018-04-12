@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,6 +41,7 @@ public class InfoFragment extends Fragment {
 
     public InfoFragment(){
 
+        place = null;
     }
 
     @SuppressLint("ValidFragment")
@@ -59,114 +61,119 @@ public class InfoFragment extends Fragment {
 
 //--------------------------------------------------------------------------------------------------
 
-        //set title
-        TextView name_info = v.findViewById(R.id.name_info);
-        name_info.setText(place.getName());
+        if(place == null){
+
+            Log.i("PlaceInfo", "place == null on info fragment");
+
+        }else {
+
+            //set title
+            TextView name_info = v.findViewById(R.id.name_info);
+            name_info.setText(place.getName());
 
 //--------------------------------------------------------------------------------------------------
 
-        // user click return to go back the main fragment
-        ImageView returnIV = v.findViewById(R.id.returm_info_IV);
-        returnIV.setOnClickListener((View view) -> {
+            // user click return to go back the main fragment
+            ImageView returnIV = v.findViewById(R.id.returm_info_IV);
+            returnIV.setOnClickListener((View view) -> {
 
-           Intent intent = new Intent(getActivity() ,MainActivity.class);
-           startActivity(intent);
-        });
-
-//--------------------------------------------------------------------------------------------------
-
-        // click on car image --> go to waze and start navigation
-        ImageView carImage = v.findViewById(R.id.carImage_info);
-        carImage.setOnClickListener((View view) -> {
-            Toast.makeText(getActivity(), "car click", Toast.LENGTH_SHORT).show();
-
-            try
-            {
-                // Launch Waze to look for Hawaii:
-                String url = "https://waze.com/ul?q=66%20Acacia%20Avenue&ll= " + place.getLat() + "," + place.getLng() + "&navigate=yes";
-                Intent intent = new Intent( Intent.ACTION_VIEW, Uri.parse(url));
-                startActivity( intent );
-            }
-            catch (ActivityNotFoundException ex)
-            {
-                // If Waze is not installed, open it in Google Play:
-                Intent intent = new Intent( Intent.ACTION_VIEW, Uri.parse("market://details?id=com.waze"));
+                Intent intent = new Intent(getActivity(), MainActivity.class);
                 startActivity(intent);
-            }
-        });
+            });
 
 //--------------------------------------------------------------------------------------------------
 
-        ImageView walkModeToGoogle = v.findViewById(R.id.walk_info_IV);
-        walkModeToGoogle.setOnClickListener((View view) -> {
+            // click on car image --> go to waze and start navigation
+            ImageView carImage = v.findViewById(R.id.carImage_info);
+            carImage.setOnClickListener((View view) -> {
+                Toast.makeText(getActivity(), "car click", Toast.LENGTH_SHORT).show();
 
-            String uri = "http://maps.google.com/maps?saddr=" + myLocation.getLatitude() + "," + myLocation.getLongitude() + "&daddr="
-                     + place.getLat() + ","+ place.getLng() + "&mode=walking";
-
-            Intent intent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse(uri));
-            intent.setPackage("com.google.android.apps.maps");
-            startActivity(intent);
-        });
+                try {
+                    // Launch Waze to look for Hawaii:
+                    String url = "https://waze.com/ul?q=66%20Acacia%20Avenue&ll= " + place.getLat() + "," + place.getLng() + "&navigate=yes";
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    startActivity(intent);
+                } catch (ActivityNotFoundException ex) {
+                    // If Waze is not installed, open it in Google Play:
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=com.waze"));
+                    startActivity(intent);
+                }
+            });
 
 //--------------------------------------------------------------------------------------------------
 
-        //set image resource for the place
-        ImageView imageRes = v.findViewById(R.id.image_info);
+            ImageView walkModeToGoogle = v.findViewById(R.id.walk_info_IV);
+            walkModeToGoogle.setOnClickListener((View view) -> {
 
-        //check if there is any image resource in the Photo list array
-        if (!place.getPhoto_reference().equals("")) {
+                String uri = "http://maps.google.com/maps?saddr=" + myLocation.getLatitude() + "," + myLocation.getLongitude() + "&daddr="
+                        + place.getLat() + "," + place.getLng() + "&mode=walking";
 
-            String reference = place.getPhoto_reference();
+                Intent intent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse(uri));
+                intent.setPackage("com.google.android.apps.maps");
+                startActivity(intent);
+            });
 
-            String url = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference="
+//--------------------------------------------------------------------------------------------------
+
+            //set image resource for the place
+            ImageView imageRes = v.findViewById(R.id.image_info);
+
+            //check if there is any image resource in the Photo list array
+            if (!place.getPhoto_reference().equals("")) {
+
+                String reference = place.getPhoto_reference();
+
+                String url = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference="
                         + reference
                         + "&key=AIzaSyBwpg6a0MQuMKzVTHlwzCmhTksktUCqHf8";
 
-            Picasso.with(getActivity())
-                    .load(url)
-                    .resize(90, 90)
-                    .centerCrop()
-                    .into(imageRes);
-        }
+                Picasso.with(getActivity())
+                        .load(url)
+                        .resize(90, 90)
+                        .centerCrop()
+                        .into(imageRes);
+            }
 
 //--------------------------------------------------------------------------------------------------
 
-        ImageView shareImage = v.findViewById(R.id.share_info_IV);
-        shareImage.setOnClickListener((View view) -> {
+            ImageView shareImage = v.findViewById(R.id.share_info_IV);
+            shareImage.setOnClickListener((View view) -> {
 
-            String sendingText = "Want to go TO " + place.getName() + " with my?(:\n" + "If so, click the following link to use Waze: ";
-            String url = "https://waze.com/ul?q=66%20Acacia%20Avenue&ll= " + place.getLat() + "," + place.getLng() + "&navigate=yes";
+                String sendingText = "Want to go TO " + place.getName() + " with my?(:\n" + "If so, click the following link to use Waze: ";
+                String url = "https://waze.com/ul?q=66%20Acacia%20Avenue&ll= " + place.getLat() + "," + place.getLng() + "&navigate=yes";
 
 
-            Intent intent = new Intent(Intent.ACTION_SEND);
-            intent.setType("text/plain");
-            intent.putExtra(Intent.EXTRA_TEXT, url);
-            intent.putExtra(android.content.Intent.EXTRA_SUBJECT, sendingText);
-            startActivity(Intent.createChooser(intent, "Share"));
+                Intent intent = new Intent(Intent.ACTION_SEND);
+                intent.setType("text/plain");
+                intent.putExtra(Intent.EXTRA_TEXT, url);
+                intent.putExtra(android.content.Intent.EXTRA_SUBJECT, sendingText);
+                startActivity(Intent.createChooser(intent, "Share"));
 
-        });
+            });
 
-        ImageView locationImage = v.findViewById(R.id.location_info_IV);
-        locationImage.setOnClickListener((View view) ->{
+            ImageView locationImage = v.findViewById(R.id.location_info_IV);
+            locationImage.setOnClickListener((View view) -> {
 
-            LatLng latLng = new LatLng(myLocation.getLatitude(),myLocation.getLongitude());
-            //update location and zoom 0 is the most far
-            myGoogleMap.addMarker(new MarkerOptions().position(latLng).title("my location"));
-            myGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng , 10));
+                LatLng latLng = new LatLng(myLocation.getLatitude(), myLocation.getLongitude());
+                //update location and zoom 0 is the most far
+                myGoogleMap.addMarker(new MarkerOptions().position(latLng).title("my location"));
+                myGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 10));
 
-        });
+            });
 
-        //set address
-        TextView addressInfo = v.findViewById(R.id.address_info);
-        addressInfo.setText(place.getAddress());
+            //set address
+            TextView addressInfo = v.findViewById(R.id.address_info);
+            addressInfo.setText(place.getAddress());
 
-        final SlidingUpPanelLayout slidingUpPanelLayout = (SlidingUpPanelLayout) v.findViewById(R.id.sliding_layout);
-        slidingUpPanelLayout.setFadeOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                slidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
-            }
-        });
+            final SlidingUpPanelLayout slidingUpPanelLayout = (SlidingUpPanelLayout) v.findViewById(R.id.sliding_layout);
+            slidingUpPanelLayout.setFadeOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    slidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+                }
+            });
+
+        }
 
         return v;
     }

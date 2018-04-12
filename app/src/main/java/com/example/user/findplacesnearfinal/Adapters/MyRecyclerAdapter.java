@@ -33,7 +33,6 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter <MyRecyclerAdapter.m
 
     public MyRecyclerAdapter(Context context, LatLng latLng) {
 
-        SugarContext.init(context);
         placeArrayList = (ArrayList<PlacesDB>) PlacesDB.listAll(PlacesDB.class);
         this.context = context;
         this.latLng = latLng;
@@ -88,143 +87,144 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter <MyRecyclerAdapter.m
                 placeAddress = "";
             }
 
-                if (!placeAddress.contains(",")) {
+            if (!placeAddress.contains(",")) {
 
-                    address.setText(placeAddress);
+                address.setText(placeAddress);
 
-                }else{
+            } else {
 
-                    String[] parts = placeAddress.split(",", 2);
-                    String part1 = parts[0]; // address
-                    String part2 = parts[1]; // country
+                String[] parts = placeAddress.split(",", 2);
+                String part1 = parts[0]; // address
+                String part2 = parts[1]; // country
 
-                    address.setText(part1 + "\n" + part2.substring(1));
-                }
+                address.setText(part1 + "\n" + part2.substring(1));
+            }
 
 
 //--------------------------------------------------------------------------------------------------
 
-                // open or close - String
-                TextView openOrCloseSing = holderView.findViewById(R.id.openOrCloseSing);
+            // open or close - String
+            TextView openOrCloseSing = holderView.findViewById(R.id.openOrCloseSing);
 
-                //if don't have open hours data
-                if (place.getOpening_hours() == null) {
+            //if don't have open hours data
+            if (place.getOpening_hours() == null) {
 
-                    openOrCloseSing.setVisibility(View.INVISIBLE);
+                openOrCloseSing.setVisibility(View.INVISIBLE);
 
-                } else if (place.getOpening_hours().equals("true")) {
+            } else if (place.getOpening_hours().equals("true")) {
 
-                    openOrCloseSing.setBackgroundResource(R.drawable.open_shape);
-                    openOrCloseSing.setText(R.string.open);
+                openOrCloseSing.setBackgroundResource(R.drawable.open_shape);
+                openOrCloseSing.setText(R.string.open);
 
-                } else {
-                    openOrCloseSing.setText(R.string.closed);
-                    openOrCloseSing.setBackgroundResource(R.drawable.close_shape);
-                }
-
-
-                //image resource
-                ImageView imageView = holderView.findViewById(R.id.imageView);
-
-                //check if there is any image resource in the Photo list array
-                if (!place.getPhoto_reference().equals("")) {
-
-                    String reference = place.getPhoto_reference();
+            } else {
+                openOrCloseSing.setText(R.string.closed);
+                openOrCloseSing.setBackgroundResource(R.drawable.close_shape);
+            }
 
 
-                    String url = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=" + reference + "&key=AIzaSyBwpg6a0MQuMKzVTHlwzCmhTksktUCqHf8";
-                    Picasso.with(context)
-                            .load(url)
-                            .resize(90, 90)
-                            .centerCrop()
-                            .into(imageView);
-                }
+            //image resource
+            ImageView imageView = holderView.findViewById(R.id.imageView);
+
+            //check if there is any image resource in the Photo list array
+            if (!place.getPhoto_reference().equals("")) {
+
+                String reference = place.getPhoto_reference();
+
+
+                String url = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=" + reference + "&key=AIzaSyBwpg6a0MQuMKzVTHlwzCmhTksktUCqHf8";
+                Picasso.with(context)
+                        .load(url)
+                        .resize(90, 90)
+                        .centerCrop()
+                        .into(imageView);
+            }
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
-                // km || miles
-                TextView meters = holderView.findViewById(R.id.KM_TV);
+            // km || miles
+            TextView meters = holderView.findViewById(R.id.KM_TV);
 
-                LatLng endP = new LatLng(place.getLat(), place.getLng());
-                CalculateDistance calculateDistance = new CalculateDistance();
-                double distance = calculateDistance.getDistance(latLng, endP);
+            LatLng endP = new LatLng(place.getLat(), place.getLng());
+            CalculateDistance calculateDistance = new CalculateDistance();
+            double distance = calculateDistance.getDistance(latLng, endP);
 
-                String myDistance = String.valueOf(round(distance, 1));
+            String myDistance = String.valueOf(round(distance, 1));
 
-            SharedPreferences sharedPreferences= PreferenceManager.getDefaultSharedPreferences(context);
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
             //get value from SharedPrefs
             String showInList = sharedPreferences.getString("list_preference", "list");
 
-            if(showInList.equals("Miles")){
+            if (showInList.equals("Miles")) {
 
                 //miles calculator
                 distance = distance * 0.621371;
                 myDistance = String.valueOf(round(distance, 1));
             }
 
-                meters.setText(myDistance);
+            meters.setText(myDistance);
 
 //-------------------------------------------------------------------------------------------------------------------------------------------
 
-                holderView.setOnClickListener((View v) -> {
+            holderView.setOnClickListener((View v) -> {
 
-                    //Replaces fragment to mapFragment and displays the location by the name of the place you clicked
-                    MyFragmentChanger cityChanger = (MyFragmentChanger) context;
-                    cityChanger.changeFragments(place);
+                //Replaces fragment to mapFragment and displays the location by the name of the place you clicked
+                MyFragmentChanger cityChanger = (MyFragmentChanger) context;
+                cityChanger.changeFragments(place);
+            });
+
+            holderView.setOnLongClickListener((View v) -> {
+
+
+                //creating a popup menu
+                PopupMenu popup = new PopupMenu(context, holderView);
+                //inflating menu from xml resource
+                popup.inflate(R.menu.item_popup_menu);
+                //adding click listener
+                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+                        switch (item.getItemId()) {
+                            case R.id.favorit_save:
+                                //
+                                FavorietsDB favorietsTableDB = new FavorietsDB(place.getLat(), place.getLng(), place.getIcon(),
+                                        place.getName(), place.isOpen(), place.getPhoto_reference(), place.getRating(), place.getTypes(),
+                                        place.getAddress());
+                                favorietsTableDB.save();
+                                break;
+
+                            case R.id.share:
+
+                                String sendingText = "Want to go here? " + place.getName() + "\n" + "If so, click the following link to use Waze: ";
+                                String url = "https://waze.com/ul?q=66%20Acacia%20Avenue&ll= " + place.getLat() + "," + place.getLng() + "&navigate=yes";
+
+
+                                Intent intent = new Intent(Intent.ACTION_SEND);
+                                intent.setType("text/plain");
+                                intent.putExtra(Intent.EXTRA_TEXT, url);
+                                intent.putExtra(android.content.Intent.EXTRA_SUBJECT, sendingText);
+                                context.startActivity(Intent.createChooser(intent, "Share"));
+                                break;
+                        }
+                        return false;
+                    }
                 });
-
-                holderView.setOnLongClickListener((View v) -> {
-
-
-                        //creating a popup menu
-                        PopupMenu popup = new PopupMenu(context, holderView);
-                        //inflating menu from xml resource
-                        popup.inflate(R.menu.item_popup_menu);
-                        //adding click listener
-                        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-
-                            @Override
-                            public boolean onMenuItemClick(MenuItem item) {
-                                switch (item.getItemId()) {
-                                    case R.id.favorit_save:
-                                        //
-                                        FavorietsDB favorietsTableDB = new FavorietsDB(place.getLat(), place.getLng(),place.getIcon(),
-                                                place.getName(), place.isOpen(), place.getPhoto_reference(), place.getRating(), place.getTypes(),
-                                                place.getAddress());
-                                        favorietsTableDB.save();
-                                        break;
-
-                                    case R.id.share:
-
-                                        String sendingText = "Want to go here? " + place.getName() + "\n" + "If so, click the following link to use Waze: ";
-                                        String url = "https://waze.com/ul?q=66%20Acacia%20Avenue&ll= " + place.getLat() + "," + place.getLng() + "&navigate=yes";
-
-
-                                        Intent intent = new Intent(Intent.ACTION_SEND);
-                                        intent.setType("text/plain");
-                                        intent.putExtra(Intent.EXTRA_TEXT, url);
-                                        intent.putExtra(android.content.Intent.EXTRA_SUBJECT, sendingText);
-                                        context.startActivity(Intent.createChooser(intent, "Share"));
-                                        break;
-                                }
-                                return false;
-                            }
-                        });
-                        //displaying the popup
-                        popup.show();
-                        return true;
-                });
-            }
-
+                //displaying the popup
+                popup.show();
+                return true;
+            });
         }
 
+    }
 
-        private double round(double value, int places) {
-            if (places < 0) throw new IllegalArgumentException();
 
-            long factor = (long) Math.pow(10, places);
-            value = value * factor;
-            long tmp = Math.round(value);
-            return (double) tmp / factor;
-        }
+    private double round(double value, int places) {
+        if (places < 0) throw new IllegalArgumentException();
+
+        long factor = (long) Math.pow(10, places);
+        value = value * factor;
+        long tmp = Math.round(value);
+        return (double) tmp / factor;
+    }
+
 }

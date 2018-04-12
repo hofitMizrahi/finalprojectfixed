@@ -32,6 +32,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.orm.SugarContext;
+import com.orm.SugarDb;
 
 import java.util.ArrayList;
 
@@ -40,6 +41,8 @@ public class MainActivity extends AppCompatActivity implements MyFragmentChanger
     FavoritesFragment favoritesFragment;
     SearchFragment searchFragment;
     InfoFragment infoFragment;
+
+    Toolbar toolbar;
 
     BroadcastReceiver connectedBroadcast;
     BroadcastReceiver disconnectedBroadcast;
@@ -50,7 +53,6 @@ public class MainActivity extends AppCompatActivity implements MyFragmentChanger
         setContentView(R.layout.activity_main);
 
         //refresh sugar database
-        PlacesDB placesDB = new PlacesDB();
         SugarContext.init(this);
 
         //connected to Broadcast to listen the mobile Power
@@ -60,7 +62,8 @@ public class MainActivity extends AppCompatActivity implements MyFragmentChanger
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
         //set up the custom tool bar
-        setToolBar();
+        toolbar = (Toolbar) findViewById(R.id.toolBar_id);
+        setToolBar(toolbar);
 
         //initialize the fragment
         favoritesFragment = new FavoritesFragment();
@@ -186,11 +189,10 @@ public class MainActivity extends AppCompatActivity implements MyFragmentChanger
         return true;
     }
 
-    private void setToolBar() {
+    private void setToolBar(Toolbar tool) {
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolBar_id);
-        toolbar.setTitle("");
-        setSupportActionBar(toolbar);
+        tool.setTitle("");
+        setSupportActionBar(this.toolbar);
     }
 
 //--------------------------------------------------------------------------------------------------------------
