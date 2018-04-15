@@ -11,7 +11,7 @@
     <LinearLayout
         android:id="@+id/backgroundImage"
         android:layout_width="match_parent"
-        android:layout_height="259dp"
+        android:layout_height="170dp"
         android:background="@drawable/drinktoapp"
         android:orientation="vertical">
 
@@ -44,13 +44,14 @@
                 android:id="@+id/linearLayout2"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
+                android:layout_alignParentTop="true"
                 android:layout_centerHorizontal="true"
                 android:background="@drawable/searching_style"
                 android:orientation="horizontal">
 
                 <EditText
                     android:id="@+id/searchtext_ET"
-                    android:layout_width="200dp"
+                    android:layout_width="170dp"
                     android:layout_height="40dp"
                     android:layout_marginLeft="10dp"
                     android:layout_weight="1"
@@ -88,7 +89,7 @@
 
             <SeekBar
                 android:id="@+id/mySeekBar_id"
-                android:layout_width="260dp"
+                android:layout_width="200dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:max="25"

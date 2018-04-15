@@ -20,9 +20,10 @@
         android:name="com.orm.SugarApp">
         <activity
             android:name=".Activity.MainActivity"
-            android:configChanges="orientation|screenSize"
+            android:configChanges="orientation|screenSize|keyboardHidden"
             android:theme="@style/AppTheme"
             android:windowSoftInputMode="stateAlwaysHidden">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

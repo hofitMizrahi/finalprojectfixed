@@ -88,16 +88,12 @@ public class CallToRetrofit {
             //if user wont to search by text || lastLocation = "" (don't have any location)
             if (!ifLocationApi || lastKnowLocation.equals("")) {
 
-                Toast.makeText(context, "text", Toast.LENGTH_SHORT).show();
-
                 repos = apiService.getTextSearchResults(userTextToSearch, API_KEY);
 
             // if user wont to search by near location && lastLocation != ""
             }else {
 
-                Toast.makeText(context, "nearBy", Toast.LENGTH_SHORT).show();
                 String radius = String.valueOf(progressBarDistance * 1000);
-
                 repos = apiService.getNearbyResults(lastLocation, radius, userTextToSearch, API_KEY);
             }
 
@@ -107,13 +103,12 @@ public class CallToRetrofit {
                 @Override
                 public void onResponse(Call<allResults> call, Response<allResults> response) {
 
-                    Toast.makeText(context, "call retrofit work's", Toast.LENGTH_SHORT).show();
                     callResultsArray = response.body();
 
                     if (callResultsArray.getResults().isEmpty()) {
 
                         //if i have zero results
-                        Toast.makeText(context, "No Results - no data in the array", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, "No Results", Toast.LENGTH_SHORT).show();
 
                         //i have results in the array
                     } else {
@@ -129,7 +124,7 @@ public class CallToRetrofit {
                 @Override
                 public void onFailure(Call<allResults> call, Throwable t) {
 
-                    Toast.makeText(context, "fail call", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "fail call, no open Internet connection", Toast.LENGTH_SHORT).show();
                     pd.dismiss();
 
                 }

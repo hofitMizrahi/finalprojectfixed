@@ -183,20 +183,25 @@ public class InfoFragment extends Fragment {
     private void setMap() {
 
         MapFragment mapFragment = new MapFragment();
-        mapFragment.getMapAsync(new OnMapReadyCallback() {
-            @Override
-            public void onMapReady(GoogleMap googleMap) {
-                myGoogleMap = googleMap;
 
-                myGoogleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+        if(place == null){
 
-                LatLng latLng = new LatLng(place.getLat(),place.getLng());
-                //update location and zoom 0 is the most far
-                myGoogleMap.addMarker(new MarkerOptions().position(latLng).title(place.getAddress()));
-                myGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng , 10));
+        }else {
+            mapFragment.getMapAsync(new OnMapReadyCallback() {
+                @Override
+                public void onMapReady(GoogleMap googleMap) {
+                    myGoogleMap = googleMap;
 
-            }
-        });
+                    myGoogleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+
+                    LatLng latLng = new LatLng(place.getLat(), place.getLng());
+                    //update location and zoom 0 is the most far
+                    myGoogleMap.addMarker(new MarkerOptions().position(latLng).title(place.getAddress()));
+                    myGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 10));
+
+                }
+            });
+        }
         getFragmentManager().beginTransaction().addToBackStack("replacing").replace(R.id.map_layout, mapFragment).commit();
     }
 

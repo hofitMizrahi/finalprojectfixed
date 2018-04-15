@@ -102,38 +102,34 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_weight="1"
-            android:layout_height="50dp"
+            android:layout_height="40dp"
             android:layout_gravity="left|center"
             android:gravity="center"
             android:paddingLeft="10dp"
             android:id="@+id/name_info"
-            android:text="sushi tel aviv"
-            android:textSize="30sp"
+            android:textSize="24dp"
             android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/address_info"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:paddingBottom="4dp"
-            android:lines="2"
-            android:paddingLeft="8dp"
-            android:text="street" />
+            <com.github.siyamed.shapeimageview.RoundedImageView
+                app:siRadius="10dp"
+                app:siBorderWidth="0dp"
+                app:siSquare="true"
+                app:siBorderColor="#1c99e2"
+                android:id="@+id/image_info"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_gravity="center_horizontal"
+                />
 
-        <com.github.siyamed.shapeimageview.RoundedImageView
-            app:siRadius="10dp"
-            app:siBorderWidth="0dp"
-            app:siSquare="true"
-            app:siBorderColor="#1c99e2"
-            android:id="@+id/image_info"
-            android:layout_width="160dp"
-            android:layout_height="160dp"
-            android:layout_marginTop="10dp"
-            android:layout_gravity="center_horizontal"
-            android:paddingBottom="15dp"
-            android:layout_marginBottom="15dp"
-            />
+            <TextView
+                android:visibility="invisible"
+                android:id="@+id/address_info"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:lines="2"
+                android:paddingLeft="8dp"
+                android:text="street" />
 
     </LinearLayout>
 

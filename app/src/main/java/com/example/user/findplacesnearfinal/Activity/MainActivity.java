@@ -5,13 +5,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
@@ -25,16 +22,8 @@ import com.example.user.findplacesnearfinal.Fragments.MyPrefsFragment;
 import com.example.user.findplacesnearfinal.R;
 import com.example.user.findplacesnearfinal.Service.MyFragmentChanger;
 import com.example.user.findplacesnearfinal.SugarDataBase.PlacesDB;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.orm.SugarContext;
-import com.orm.SugarDb;
 
-import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements MyFragmentChanger{
 
@@ -62,8 +51,7 @@ public class MainActivity extends AppCompatActivity implements MyFragmentChanger
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
         //set up the custom tool bar
-        toolbar = (Toolbar) findViewById(R.id.toolBar_id);
-        setToolBar(toolbar);
+        setToolBar();
 
         //initialize the fragment
         favoritesFragment = new FavoritesFragment();
@@ -119,12 +107,18 @@ public class MainActivity extends AppCompatActivity implements MyFragmentChanger
 
             getFragmentManager().beginTransaction().replace(R.id.main_portrait_layout, searchFragment).commit();
 
-            //if its mobile and landscape OR if its tablet
-        } else if (!isTablet(this) && !isPortrait() || isTablet(this)) {
+        }else if(!isPortrait()){
 
             getFragmentManager().beginTransaction().replace(R.id.search_tablet_layout, searchFragment).commit();
             getFragmentManager().beginTransaction().replace(R.id.tablet_map_layout, infoFragment)
                     .addToBackStack(null).commit();
+
+        } else if (isTablet(this)) {
+
+            getFragmentManager().beginTransaction().replace(R.id.search_tablet_layout, searchFragment).commit();
+            getFragmentManager().beginTransaction().replace(R.id.tablet_map_layout, infoFragment)
+                    .addToBackStack(null).commit();
+
         }
     }
 
@@ -189,10 +183,11 @@ public class MainActivity extends AppCompatActivity implements MyFragmentChanger
         return true;
     }
 
-    private void setToolBar(Toolbar tool) {
+    private void setToolBar() {
 
-        tool.setTitle("");
-        setSupportActionBar(this.toolbar);
+        toolbar = (Toolbar) findViewById(R.id.toolBar_id);
+        toolbar.setTitle("");
+        setSupportActionBar(toolbar);
     }
 
 //--------------------------------------------------------------------------------------------------------------
@@ -205,9 +200,16 @@ public class MainActivity extends AppCompatActivity implements MyFragmentChanger
 
         infoFragment = new InfoFragment(place);
 
-        if(isPortrait()) {
+        if(isPortrait() && !isTablet(this)) {
+
             getFragmentManager().beginTransaction().replace(R.id.main_portrait_layout, infoFragment)
                     .addToBackStack(null).commit();
+
+        }else if(isTablet(this) || !isPortrait()) {
+
+            getFragmentManager().beginTransaction().replace(R.id.tablet_map_layout, infoFragment)
+                    .addToBackStack(null).commit();
+
         }
     }
 
@@ -228,11 +230,9 @@ public class MainActivity extends AppCompatActivity implements MyFragmentChanger
         super.onStop();
 
         // close receiver
-        try {
-
+        try{
             unregisterReceiver(connectedBroadcast);
             unregisterReceiver(disconnectedBroadcast);
-
         }catch (Exception ee){
 
             ee.printStackTrace();

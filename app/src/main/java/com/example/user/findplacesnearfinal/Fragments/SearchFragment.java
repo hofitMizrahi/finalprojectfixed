@@ -74,7 +74,7 @@ public class SearchFragment extends Fragment implements LocationListener {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
+        setRetainInstance(true);
         //inflate the layout
         myView = inflater.inflate(R.layout.search_fragment, container, false);
 
@@ -366,13 +366,11 @@ public class SearchFragment extends Fragment implements LocationListener {
         lastKnownLocation = ((LocationManager) getActivity().getSystemService(LOCATION_SERVICE)).getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
         if (lastKnownLocation == null) {
-            Toast.makeText(getActivity(), "location not available with gps:(", Toast.LENGTH_SHORT).show();
             lastKnownLocation = ((LocationManager) getActivity().getSystemService(LOCATION_SERVICE)).getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
 
         }
 
         if(lastKnownLocation != null){
-            Toast.makeText(getActivity(), "lat: " + lastKnownLocation.getLatitude() + " lon:" + lastKnownLocation.getLongitude(), Toast.LENGTH_SHORT).show();
             lastKnowStringLoc = lastKnownLocation.getLatitude() + "," + lastKnownLocation.getLongitude();
 
         }
@@ -426,11 +424,8 @@ public class SearchFragment extends Fragment implements LocationListener {
                     }
 
                 } else {
-
                     // permission denied, boo! Disable the
                     // functionality that depends on this permission.
-                    Toast.makeText(getActivity(), "permission denied", Toast.LENGTH_SHORT).show();
-
                 }
             }
         }
